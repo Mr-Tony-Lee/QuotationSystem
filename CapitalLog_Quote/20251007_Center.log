@@ -1,0 +1,177 @@
+-----------------------------------------------------------------
+[12352] 2025/10/07 10:35:39.144 A131221647_SKCenterLib_Login By CenterCert.
+[12352] 2025/10/07 10:35:39.203 SKCenterLib_LoginGW A131221647
+[12352] 2025/10/07 10:35:39.793 /Login/Password Query result is 000,0;祅Θ
+[12352] 2025/10/07 10:35:39.793 Start update timer automatically.  Result of Timer 2791
+[12352] 2025/10/07 10:35:39.997 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[12352] 2025/10/07 10:35:40.166 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[12352] 2025/10/07 10:35:40.341 Precheck/DistributedServer Query result is 000,だ皌Θ
+[12352] 2025/10/07 10:35:40.342 Login all status is 0
+[31568] 2025/10/07 10:36:46.605 A131221647_SKCenterLib_Login By CenterCert.
+[31568] 2025/10/07 10:36:46.647 SKCenterLib_LoginGW A131221647
+[31568] 2025/10/07 10:36:46.982 /Login/Password Query result is 000,0;祅Θ
+[31568] 2025/10/07 10:36:46.982 Start update timer automatically.  Result of Timer 2778
+[31568] 2025/10/07 10:36:47.179 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[31568] 2025/10/07 10:36:47.304 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[31568] 2025/10/07 10:36:47.478 Precheck/DistributedServer Query result is 000,だ皌Θ
+[31568] 2025/10/07 10:36:47.478 Login all status is 0
+[32060] 2025/10/07 13:10:43.778 A131221647_SKCenterLib_Login By CenterCert.
+[32060] 2025/10/07 13:10:43.827 SKCenterLib_LoginGW A131221647
+[32060] 2025/10/07 13:10:44.197 /Login/Password Query result is 000,0;祅Θ
+[32060] 2025/10/07 13:10:44.197 Start update timer automatically.  Result of Timer 2397
+[32060] 2025/10/07 13:10:44.413 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[32060] 2025/10/07 13:10:44.548 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[32060] 2025/10/07 13:10:44.716 Precheck/DistributedServer Query result is 000,だ皌Θ
+[32060] 2025/10/07 13:10:44.716 Login all status is 0
+[13644] 2025/10/07 14:53:50.292 A131221647_SKCenterLib_Login By CenterCert.
+[13644] 2025/10/07 14:53:50.349 SKCenterLib_LoginGW A131221647
+[13644] 2025/10/07 14:53:50.801 /Login/Password Query result is 000,0;祅Θ
+[13644] 2025/10/07 14:53:50.801 Start update timer automatically.  Result of Timer 1889
+[13644] 2025/10/07 14:53:51.100 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[13644] 2025/10/07 14:53:51.294 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[13644] 2025/10/07 14:53:51.498 Precheck/DistributedServer Query result is 000,だ皌Θ
+[13644] 2025/10/07 14:53:51.498 Login all status is 0
+[21428] 2025/10/07 14:54:45.510 A131221647_SKCenterLib_Login By CenterCert.
+[21428] 2025/10/07 14:54:45.565 SKCenterLib_LoginGW A131221647
+[21428] 2025/10/07 14:54:46.135 /Login/Password Query result is 000,0;祅Θ
+[21428] 2025/10/07 14:54:46.135 Start update timer automatically.  Result of Timer 1874
+[21428] 2025/10/07 14:54:46.530 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[21428] 2025/10/07 14:54:46.960 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[21428] 2025/10/07 14:54:47.341 Precheck/DistributedServer Query result is 000,だ皌Θ
+[21428] 2025/10/07 14:54:47.341 Login all status is 0
+[26308] 2025/10/07 14:56:53.760 A131221647_SKCenterLib_Login By CenterCert.
+[26308] 2025/10/07 14:56:53.807 SKCenterLib_LoginGW A131221647
+[26308] 2025/10/07 14:56:54.731 /Login/Password Query result is 000,0;祅Θ
+[26308] 2025/10/07 14:56:54.731 Start update timer automatically.  Result of Timer 1855
+[26308] 2025/10/07 14:56:55.028 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[26308] 2025/10/07 14:56:55.256 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[26308] 2025/10/07 14:56:55.536 Precheck/DistributedServer Query result is 000,だ皌Θ
+[26308] 2025/10/07 14:56:55.537 Login all status is 0
+[13024] 2025/10/07 14:58:33.992 A131221647_SKCenterLib_Login By CenterCert.
+[13024] 2025/10/07 14:58:34.039 SKCenterLib_LoginGW A131221647
+[13024] 2025/10/07 14:58:34.607 /Login/Password Query result is 000,0;祅Θ
+[13024] 2025/10/07 14:58:34.608 Start update timer automatically.  Result of Timer 1843
+[13024] 2025/10/07 14:58:34.938 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[13024] 2025/10/07 14:58:35.205 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[13024] 2025/10/07 14:58:35.493 Precheck/DistributedServer Query result is 000,だ皌Θ
+[13024] 2025/10/07 14:58:35.493 Login all status is 0
+[31720] 2025/10/07 14:59:33.467 A131221647_SKCenterLib_Login By CenterCert.
+[31720] 2025/10/07 14:59:33.517 SKCenterLib_LoginGW A131221647
+[31720] 2025/10/07 14:59:35.796 /Login/Password Query result is 000,0;祅Θ
+[31720] 2025/10/07 14:59:35.796 Start update timer automatically.  Result of Timer 1822
+[31720] 2025/10/07 14:59:36.126 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[31720] 2025/10/07 14:59:36.387 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[31720] 2025/10/07 14:59:36.633 Precheck/DistributedServer Query result is 000,だ皌Θ
+[31720] 2025/10/07 14:59:36.633 Login all status is 0
+[20028] 2025/10/07 15:19:14.515 A131221647_SKCenterLib_Login By CenterCert.
+[20028] 2025/10/07 15:19:14.561 SKCenterLib_LoginGW A131221647
+[20028] 2025/10/07 15:19:15.155 /Login/Password Query result is 000,0;祅Θ
+[20028] 2025/10/07 15:19:15.155 Start update timer automatically.  Result of Timer 1534
+[20028] 2025/10/07 15:19:15.488 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[20028] 2025/10/07 15:19:15.699 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[20028] 2025/10/07 15:19:15.975 Precheck/DistributedServer Query result is 000,だ皌Θ
+[20028] 2025/10/07 15:19:15.975 Login all status is 0
+[17900] 2025/10/07 15:28:35.681 A131221647_SKCenterLib_Login By CenterCert.
+[17900] 2025/10/07 15:28:35.729 SKCenterLib_LoginGW A131221647
+[17900] 2025/10/07 15:28:36.307 /Login/Password Query result is 000,0;祅Θ
+[17900] 2025/10/07 15:28:36.307 Start update timer automatically.  Result of Timer 1390
+[17900] 2025/10/07 15:28:36.769 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[17900] 2025/10/07 15:28:37.105 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[17900] 2025/10/07 15:28:37.385 Precheck/DistributedServer Query result is 000,だ皌Θ
+[17900] 2025/10/07 15:28:37.385 Login all status is 0
+[25224] 2025/10/07 15:29:54.884 A131221647_SKCenterLib_Login By CenterCert.
+[25224] 2025/10/07 15:29:54.930 SKCenterLib_LoginGW A131221647
+[25224] 2025/10/07 15:29:55.526 /Login/Password Query result is 000,0;祅Θ
+[25224] 2025/10/07 15:29:55.526 Start update timer automatically.  Result of Timer 1348
+[25224] 2025/10/07 15:29:55.865 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[25224] 2025/10/07 15:29:56.124 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[25224] 2025/10/07 15:29:56.448 Precheck/DistributedServer Query result is 000,だ皌Θ
+[25224] 2025/10/07 15:29:56.448 Login all status is 0
+[27132] 2025/10/07 15:37:06.300 A131221647_SKCenterLib_Login By CenterCert.
+[27132] 2025/10/07 15:37:06.348 SKCenterLib_LoginGW A131221647
+[27132] 2025/10/07 15:37:06.875 /Login/Password Query result is 000,0;祅Θ
+[27132] 2025/10/07 15:37:06.875 Start update timer automatically.  Result of Timer 1228
+[27132] 2025/10/07 15:37:07.177 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[27132] 2025/10/07 15:37:07.383 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[27132] 2025/10/07 15:37:07.674 Precheck/DistributedServer Query result is 000,だ皌Θ
+[27132] 2025/10/07 15:37:07.674 Login all status is 0
+[32084] 2025/10/07 15:38:48.187 A131221647_SKCenterLib_Login By CenterCert.
+[32084] 2025/10/07 15:38:48.243 SKCenterLib_LoginGW A131221647
+[32084] 2025/10/07 15:38:48.915 /Login/Password Query result is 000,0;祅Θ
+[32084] 2025/10/07 15:38:48.915 Start update timer automatically.  Result of Timer 1211
+[32084] 2025/10/07 15:38:49.358 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[32084] 2025/10/07 15:38:49.582 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[32084] 2025/10/07 15:38:49.898 Precheck/DistributedServer Query result is 000,だ皌Θ
+[32084] 2025/10/07 15:38:49.898 Login all status is 0
+[22748] 2025/10/07 15:39:48.732 A131221647_SKCenterLib_Login By CenterCert.
+[22748] 2025/10/07 15:39:48.779 SKCenterLib_LoginGW A131221647
+[22748] 2025/10/07 15:39:49.307 /Login/Password Query result is 000,0;祅Θ
+[22748] 2025/10/07 15:39:49.307 Start update timer automatically.  Result of Timer 1192
+[22748] 2025/10/07 15:39:49.706 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[22748] 2025/10/07 15:39:50.397 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[22748] 2025/10/07 15:39:51.721 Precheck/DistributedServer Query result is 000,だ皌Θ
+[22748] 2025/10/07 15:39:51.721 Login all status is 0
+[27256] 2025/10/07 15:46:20.339 A131221647_SKCenterLib_Login By CenterCert.
+[27256] 2025/10/07 15:46:20.381 SKCenterLib_LoginGW A131221647
+[27256] 2025/10/07 15:46:20.863 /Login/Password Query result is 000,0;祅Θ
+[27256] 2025/10/07 15:46:20.863 Start update timer automatically.  Result of Timer 1105
+[27256] 2025/10/07 15:46:21.249 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[27256] 2025/10/07 15:46:21.469 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[27256] 2025/10/07 15:46:21.714 Precheck/DistributedServer Query result is 000,だ皌Θ
+[27256] 2025/10/07 15:46:21.715 Login all status is 0
+[26180] 2025/10/07 15:59:59.326 A131221647_SKCenterLib_Login By CenterCert.
+[26180] 2025/10/07 15:59:59.381 SKCenterLib_LoginGW A131221647
+[26180] 2025/10/07 16:00:00.035 /Login/Password Query result is 000,0;祅Θ
+[26180] 2025/10/07 16:00:00.035 Start update timer automatically.  Result of Timer 895
+[26180] 2025/10/07 16:00:00.414 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[26180] 2025/10/07 16:00:00.652 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[26180] 2025/10/07 16:00:00.967 Precheck/DistributedServer Query result is 000,だ皌Θ
+[26180] 2025/10/07 16:00:00.967 Login all status is 0
+[10896] 2025/10/07 16:13:11.348 A131221647_SKCenterLib_Login By CenterCert.
+[10896] 2025/10/07 16:13:11.396 SKCenterLib_LoginGW A131221647
+[10896] 2025/10/07 16:13:12.587 /Login/Password Query result is 000,0;祅Θ
+[10896] 2025/10/07 16:13:12.587 Start update timer automatically.  Result of Timer 748
+[10896] 2025/10/07 16:13:14.641 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[10896] 2025/10/07 16:13:15.812 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[10896] 2025/10/07 16:13:16.632 Precheck/DistributedServer Query result is 000,だ皌Θ
+[10896] 2025/10/07 16:13:16.632 Login all status is 0
+[31460] 2025/10/07 16:14:37.640 A131221647_SKCenterLib_Login By CenterCert.
+[31460] 2025/10/07 16:14:37.682 SKCenterLib_LoginGW A131221647
+[31460] 2025/10/07 16:14:38.373 /Login/Password Query result is 000,0;祅Θ
+[31460] 2025/10/07 16:14:38.373 Start update timer automatically.  Result of Timer 725
+[31460] 2025/10/07 16:14:38.831 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[31460] 2025/10/07 16:14:39.050 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[31460] 2025/10/07 16:14:39.338 Precheck/DistributedServer Query result is 000,だ皌Θ
+[31460] 2025/10/07 16:14:39.338 Login all status is 0
+[18788] 2025/10/07 16:16:59.158 A131221647_SKCenterLib_Login By CenterCert.
+[18788] 2025/10/07 16:16:59.207 SKCenterLib_LoginGW A131221647
+[18788] 2025/10/07 16:16:59.756 /Login/Password Query result is 000,0;祅Θ
+[18788] 2025/10/07 16:16:59.756 Start update timer automatically.  Result of Timer 696
+[18788] 2025/10/07 16:17:00.239 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[18788] 2025/10/07 16:17:00.445 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[18788] 2025/10/07 16:17:00.819 Precheck/DistributedServer Query result is 000,だ皌Θ
+[18788] 2025/10/07 16:17:00.819 Login all status is 0
+[29772] 2025/10/07 16:18:43.207 A131221647_SKCenterLib_Login By CenterCert.
+[29772] 2025/10/07 16:18:43.248 SKCenterLib_LoginGW A131221647
+[29772] 2025/10/07 16:18:43.712 /Login/Password Query result is 000,0;祅Θ
+[29772] 2025/10/07 16:18:43.712 Start update timer automatically.  Result of Timer 671
+[29772] 2025/10/07 16:18:44.007 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[29772] 2025/10/07 16:18:44.270 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[29772] 2025/10/07 16:18:44.622 Precheck/DistributedServer Query result is 000,だ皌Θ
+[29772] 2025/10/07 16:18:44.622 Login all status is 0
+[30488] 2025/10/07 16:20:09.220 A131221647_SKCenterLib_Login By CenterCert.
+[30488] 2025/10/07 16:20:09.262 SKCenterLib_LoginGW A131221647
+[30488] 2025/10/07 16:20:09.701 /Login/Password Query result is 000,0;祅Θ
+[30488] 2025/10/07 16:20:09.702 Start update timer automatically.  Result of Timer 636
+[30488] 2025/10/07 16:20:09.978 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[30488] 2025/10/07 16:20:10.210 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[30488] 2025/10/07 16:20:10.483 Precheck/DistributedServer Query result is 000,だ皌Θ
+[30488] 2025/10/07 16:20:10.484 Login all status is 0
+[19692] 2025/10/07 16:30:56.749 A131221647_SKCenterLib_Login By CenterCert.
+[19692] 2025/10/07 16:30:56.791 SKCenterLib_LoginGW A131221647
+[19692] 2025/10/07 16:30:57.319 /Login/Password Query result is 000,0;祅Θ
+[19692] 2025/10/07 16:30:57.319 Start update timer automatically.  Result of Timer 562
+[19692] 2025/10/07 16:30:57.710 /Common/Personal/GetOrder2LoginData Query result is 000,Θ
+[19692] 2025/10/07 16:30:57.939 /Common/Personal/GetAccountsByIDNO Query result is 000,琩高Θ
+[19692] 2025/10/07 16:30:58.218 Precheck/DistributedServer Query result is 000,だ皌Θ
+[19692] 2025/10/07 16:30:58.219 Login all status is 0
