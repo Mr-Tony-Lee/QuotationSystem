@@ -1,0 +1,43 @@
+-----------------------------------------------------------------
+[6228] 2025/10/05 04:22:17.805 StockNo=CWF00,Error=查無資料
+[6228] 2025/10/05 04:22:17.805 MarketNo not found
+[6228] 2025/10/05 04:22:22.293 StockNo=HAF00,Error=查無資料
+[6228] 2025/10/05 04:22:22.293 MarketNo not found
+[5580] 2025/10/05 13:18:52.600 StockNo=CWF00,Error=查無資料
+[5580] 2025/10/05 13:18:52.600 MarketNo not found
+[5580] 2025/10/05 13:18:56.946 StockNo=HAF00,Error=查無資料
+[5580] 2025/10/05 13:18:56.946 MarketNo not found
+[27320] 2025/10/05 22:01:26.937 StockNo=CWF00,Error=查無資料
+[27320] 2025/10/05 22:01:26.937 MarketNo not found
+[27320] 2025/10/05 22:01:30.181 StockNo=HAF00,Error=查無資料
+[27320] 2025/10/05 22:01:30.181 MarketNo not found
+[27320] 2025/10/05 22:01:38.460 StockNo=RMF00,Error=查無資料
+[27320] 2025/10/05 22:01:38.460 MarketNo not found
+[27320] 2025/10/05 22:01:38.653 StockNo=RQF00,Error=查無資料
+[27320] 2025/10/05 22:01:38.654 MarketNo not found
+[27320] 2025/10/05 22:01:45.086 StockNo=2352,Error=查無資料
+[27320] 2025/10/05 22:01:45.086 MarketNo not found
+[27320] 2025/10/05 22:01:46.697 StockNo=2489,Error=查無資料
+[27320] 2025/10/05 22:01:46.697 MarketNo not found
+[27320] 2025/10/05 22:01:47.909 StockNo=2888,Error=查無資料
+[27320] 2025/10/05 22:01:47.910 MarketNo not found
+[7856] 2025/10/05 22:38:49.576 StockNo=CWF00,Error=查無資料
+[7856] 2025/10/05 22:38:49.576 MarketNo not found
+[7856] 2025/10/05 22:38:51.579 StockNo=HAF00,Error=查無資料
+[7856] 2025/10/05 22:38:51.579 MarketNo not found
+[7856] 2025/10/05 22:38:56.802 StockNo=RMF00,Error=查無資料
+[7856] 2025/10/05 22:38:56.802 MarketNo not found
+[7856] 2025/10/05 22:38:56.903 StockNo=RQF00,Error=查無資料
+[7856] 2025/10/05 22:38:56.903 MarketNo not found
+[7856] 2025/10/05 22:39:00.984 StockNo=2352,Error=查無資料
+[7856] 2025/10/05 22:39:00.984 MarketNo not found
+[7856] 2025/10/05 22:39:02.016 StockNo=2489,Error=查無資料
+[7856] 2025/10/05 22:39:02.016 MarketNo not found
+[7856] 2025/10/05 22:39:02.829 StockNo=2888,Error=查無資料
+[7856] 2025/10/05 22:39:02.829 MarketNo not found
+[7856] 2025/10/05 22:39:07.070 StockNo=TSE,Error=查無資料
+[7856] 2025/10/05 22:39:07.070 MarketNo not found
+[7856] 2025/10/05 22:39:07.117 Currency not found in Data item
+[7856] 2025/10/05 22:39:07.165 Currency not found in Data item
+[7856] 2025/10/05 22:39:07.179 StockNo=TWMC,Error=查無資料
+[7856] 2025/10/05 22:39:07.179 MarketNo not found

@@ -1,0 +1,41 @@
+-----------------------------------------------------------------
+[31296] 2025/10/04 20:48:17.038 A131221647_SKCenterLib_Login By CenterCert.
+[31296] 2025/10/04 20:48:17.080 SKCenterLib_LoginGW A131221647
+[31296] 2025/10/04 20:48:17.338 /Login/Password Query result is 000,0;登入成功
+[31296] 2025/10/04 20:48:17.339 Start update timer automatically.  Result of Timer 16691
+[31296] 2025/10/04 20:48:17.470 /Common/Personal/GetOrder2LoginData Query result is 000,成功
+[31296] 2025/10/04 20:48:17.553 /Common/Personal/GetAccountsByIDNO Query result is 000,查詢成功
+[31296] 2025/10/04 20:48:17.677 Precheck/DistributedServer Query result is 000,分配成功
+[31296] 2025/10/04 20:48:17.677 Login all status is 0
+[2496] 2025/10/04 21:06:01.983 A131221647_SKCenterLib_Login By CenterCert.
+[2496] 2025/10/04 21:06:02.026 SKCenterLib_LoginGW A131221647
+[2496] 2025/10/04 21:06:02.275 /Login/Password Query result is 000,0;登入成功
+[2496] 2025/10/04 21:06:02.276 Start update timer automatically.  Result of Timer 16592
+[2496] 2025/10/04 21:06:02.390 /Common/Personal/GetOrder2LoginData Query result is 000,成功
+[2496] 2025/10/04 21:06:02.479 /Common/Personal/GetAccountsByIDNO Query result is 000,查詢成功
+[2496] 2025/10/04 21:06:02.594 Precheck/DistributedServer Query result is 000,分配成功
+[2496] 2025/10/04 21:06:02.594 Login all status is 0
+[20248] 2025/10/04 21:55:35.634 A131221647_SKCenterLib_Login By CenterCert.
+[20248] 2025/10/04 21:55:35.680 SKCenterLib_LoginGW A131221647
+[20248] 2025/10/04 21:55:35.969 /Login/Password Query result is 306,您輸入的帳號或密碼錯誤，請重新輸入，謝謝。
+[20248] 2025/10/04 21:55:35.969 Login error code is 306
+[20248] 2025/10/04 21:55:42.735 A131221647_SKCenterLib_Login By CenterCert.
+[20248] 2025/10/04 21:55:42.763 SKCenterLib_LoginGW A131221647
+[20248] 2025/10/04 21:55:42.945 /Login/Password Query result is 306,您輸入的帳號或密碼錯誤，請重新輸入，謝謝。
+[20248] 2025/10/04 21:55:42.945 Login error code is 306
+[8656] 2025/10/04 21:57:33.253 A131221647_SKCenterLib_Login By CenterCert.
+[8656] 2025/10/04 21:57:33.296 SKCenterLib_LoginGW A131221647
+[8656] 2025/10/04 21:57:33.660 /Login/Password Query result is 000,0;登入成功
+[8656] 2025/10/04 21:57:33.660 Start update timer automatically.  Result of Timer 15156
+[8656] 2025/10/04 21:57:33.839 /Common/Personal/GetOrder2LoginData Query result is 000,成功
+[8656] 2025/10/04 21:57:33.944 /Common/Personal/GetAccountsByIDNO Query result is 000,查詢成功
+[8656] 2025/10/04 21:57:34.105 Precheck/DistributedServer Query result is 000,分配成功
+[8656] 2025/10/04 21:57:34.106 Login all status is 0
+[13764] 2025/10/04 21:59:48.842 A131221647_SKCenterLib_Login By CenterCert.
+[13764] 2025/10/04 21:59:48.883 SKCenterLib_LoginGW A131221647
+[13764] 2025/10/04 21:59:49.723 /Login/Password Query result is 000,0;登入成功
+[13764] 2025/10/04 21:59:49.723 Start update timer automatically.  Result of Timer 15033
+[13764] 2025/10/04 21:59:50.166 /Common/Personal/GetOrder2LoginData Query result is 000,成功
+[13764] 2025/10/04 21:59:50.551 /Common/Personal/GetAccountsByIDNO Query result is 000,查詢成功
+[13764] 2025/10/04 21:59:50.870 Precheck/DistributedServer Query result is 000,分配成功
+[13764] 2025/10/04 21:59:50.871 Login all status is 0

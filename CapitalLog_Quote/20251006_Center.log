@@ -1,0 +1,9 @@
+-----------------------------------------------------------------
+[11100] 2025/10/06 11:17:42.376 A131221647_SKCenterLib_Login By CenterCert.
+[11100] 2025/10/06 11:17:42.435 SKCenterLib_LoginGW A131221647
+[11100] 2025/10/06 11:17:42.871 /Login/Password Query result is 000,0;登入成功
+[11100] 2025/10/06 11:17:42.872 Start update timer automatically.  Result of Timer 5295
+[11100] 2025/10/06 11:17:43.002 /Common/Personal/GetOrder2LoginData Query result is 000,成功
+[11100] 2025/10/06 11:17:43.094 /Common/Personal/GetAccountsByIDNO Query result is 000,查詢成功
+[11100] 2025/10/06 11:17:43.241 Precheck/DistributedServer Query result is 000,分配成功
+[11100] 2025/10/06 11:17:43.241 Login all status is 0
