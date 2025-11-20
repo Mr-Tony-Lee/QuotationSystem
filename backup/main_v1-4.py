@@ -10,12 +10,13 @@ import comtypes.client
 import comtypes.gen.SKCOMLib as sk
 import pandas as pd
 from io import StringIO
+from typing import Union
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 # 創建一個全域的消息隊列來處理 COM 事件
 com_event_queue = queue.Queue()
 
-comtypes.client.GetModule('libs/SKCOM.dll') #加此行需將API放與py同目錄
+comtypes.client.GetModule('SKCOM.dll') #加此行需將API放與py同目錄
 skC = comtypes.client.CreateObject(sk.SKCenterLib,interface=sk.ISKCenterLib)
 skOOQ = comtypes.client.CreateObject(sk.SKOOQuoteLib,interface=sk.ISKOOQuoteLib)
 skO = comtypes.client.CreateObject(sk.SKOrderLib,interface=sk.ISKOrderLib)
@@ -161,20 +162,21 @@ class PriceSpreadInfo:
         self.future = FutureInfo()  # 使用 FutureInfo 而非 StockInfo
     
     @property
-    def Spread_StockAsk_FutureBid(self):
-        """股票賣價 - 期貨買價 (做多期貨、做空股票的價差)"""
-        return self.stock.ask_price - self.future.bid_price if (self.stock.ask_price > 0 and self.future.bid_price > 0) else 0
+    def Spread_FutureAsk_StockBid(self):
+        """ 正價差 : 期貨賣價 - 股票買價 > 0 """
+        """ 做多現貨、做空期貨"""
+        return self.future.ask_price - self.stock.bid_price if (self.future.ask_price > 0 and self.stock.bid_price > 0) else 0   
 
     @property
-    def Spread_FutureAsk_StockBid(self):
-        """期貨賣價 - 股票買價 (做多股票、做空期貨的價差)"""
-        return self.future.ask_price - self.stock.bid_price if (self.future.ask_price > 0 and self.stock.bid_price > 0) else 0
+    def Spread_StockAsk_FutureBid(self):
+        """逆價差 : 股票賣價 - 期貨買價"""
+        """ 做多期貨、做空現貨"""
+        return self.stock.ask_price - self.future.bid_price if (self.stock.ask_price > 0 and self.future.bid_price > 0) else 0
 
     @property
     def CompleteData(self):
         """檢查是否有完整的買賣價資料"""
-        return (self.future.bid_price > 0 and self.future.ask_price > 0 and
-                self.stock.bid_price > 0 and self.stock.ask_price > 0)
+        return (self.future.bid_price > 0 and self.future.ask_price > 0 and self.stock.bid_price > 0 and self.stock.ask_price > 0)
     
     @property
     def Positive_Future(self):
@@ -186,170 +188,77 @@ class PriceSpreadInfo:
         """檢查股票買賣量是否均大於0"""
         return (self.stock.bid_volume > 0 and self.stock.ask_volume > 0)
     
-    # ==================== 成本計算常數 ====================
-    FUTURE_FEE_PER_CONTRACT = 60  # 期貨手續費（元/口，雙邊）
-    FUTURE_TAX_RATE = 0.00002  # 期貨交易稅率（十萬分之2，雙邊）
-    STOCK_FEE_RATE = 0.001425 * 0.5  # 股票手續費率（5折，雙邊）
-    STOCK_TAX_RATE = 0.003  # 股票交易稅（僅賣出）
-    FUTURE_MULTIPLIER = 200  # 期貨合約乘數
-    STOCK_MULTIPLIER = 1000  # 股票張數（1張=1000股）
-    
-    # ==================== 方向一：買股賣期（正價差套利）====================
     @property
-    def BuyStock_SellFuture_GrossProfit(self):
-        """買股賣期 - 毛利潤（價差 × 合約乘數）"""
-        if not self.CompleteData:
-            return 0
-        # 價差 = 期貨買價 - 股票賣價（我們買股票用ask，賣期貨用bid）
-        spread = self.future.bid_price - self.stock.ask_price
-        return spread * self.FUTURE_MULTIPLIER if spread > 0 else 0
+    def FutureFee(self):
+        """計算期貨交易手續費 (假設為0.00002)"""
+        return self.future.bid_price * 1000 * 0.00002 if self.future.bid_price > 0 else 0
     
     @property
-    def BuyStock_SellFuture_Cost(self):
-        """買股賣期 - 總成本"""
-        if not self.CompleteData:
-            return 0
-        
-        # 股票成本（買入 + 賣出）
-        stock_value = self.stock.ask_price * self.STOCK_MULTIPLIER  # 買1張股票
-        stock_buy_fee = stock_value * self.STOCK_FEE_RATE  # 買入手續費
-        stock_sell_fee = stock_value * self.STOCK_FEE_RATE  # 賣出手續費
-        stock_tax = stock_value * self.STOCK_TAX_RATE  # 賣出交易稅
-        stock_cost = stock_buy_fee + stock_sell_fee + stock_tax
-        
-        # 期貨成本（賣出 + 回補）
-        future_value = self.future.bid_price * self.FUTURE_MULTIPLIER
-        future_fee = self.FUTURE_FEE_PER_CONTRACT  # 固定手續費（雙邊）
-        future_tax = future_value * self.FUTURE_TAX_RATE * 2  # 交易稅（雙邊）
-        future_cost = future_fee + future_tax
-        
-        return stock_cost + future_cost
-    
-    @property
-    def BuyStock_SellFuture_NetProfit(self):
-        """買股賣期 - 淨利潤"""
-        return max(self.BuyStock_SellFuture_GrossProfit - self.BuyStock_SellFuture_Cost, 0)
-    
-    @property
-    def BuyStock_SellFuture_NetProfitRate(self):
-        """買股賣期 - 淨利率（相對於股票投資額）"""
-        if not self.CompleteData:
-            return 0
-        stock_investment = self.stock.ask_price * self.STOCK_MULTIPLIER
-        return (self.BuyStock_SellFuture_NetProfit / stock_investment) if stock_investment > 0 else 0
-    
-    # ==================== 方向二：賣股買期（逆價差套利）====================
-    @property
-    def SellStock_BuyFuture_GrossProfit(self):
-        """賣股買期 - 毛利潤（價差 × 合約乘數）"""
-        if not self.CompleteData:
-            return 0
-        # 價差 = 股票買價 - 期貨賣價（我們賣股票用bid，買期貨用ask）
-        spread = self.stock.bid_price - self.future.ask_price
-        return spread * self.FUTURE_MULTIPLIER if spread > 0 else 0
-    
-    @property
-    def SellStock_BuyFuture_Cost(self):
-        """賣股買期 - 總成本"""
-        if not self.CompleteData:
-            return 0
-        
-        # 股票成本（賣出 + 回補）
-        stock_value = self.stock.bid_price * self.STOCK_MULTIPLIER
-        stock_sell_fee = stock_value * self.STOCK_FEE_RATE  # 賣出手續費
-        stock_tax = stock_value * self.STOCK_TAX_RATE  # 賣出交易稅
-        stock_buy_fee = stock_value * self.STOCK_FEE_RATE  # 回補手續費
-        stock_cost = stock_sell_fee + stock_tax + stock_buy_fee
-        
-        # 期貨成本（買入 + 賣出）
-        future_value = self.future.ask_price * self.FUTURE_MULTIPLIER
-        future_fee = self.FUTURE_FEE_PER_CONTRACT  # 固定手續費（雙邊）
-        future_tax = future_value * self.FUTURE_TAX_RATE * 2  # 交易稅（雙邊）
-        future_cost = future_fee + future_tax
-        
-        return stock_cost + future_cost
-    
-    @property
-    def SellStock_BuyFuture_NetProfit(self):
-        """賣股買期 - 淨利潤"""
-        return max(self.SellStock_BuyFuture_GrossProfit - self.SellStock_BuyFuture_Cost, 0)
-    
-    @property
-    def SellStock_BuyFuture_NetProfitRate(self):
-        """賣股買期 - 淨利率（相對於股票投資額）"""
-        if not self.CompleteData:
-            return 0
-        stock_investment = self.stock.bid_price * self.STOCK_MULTIPLIER
-        return (self.SellStock_BuyFuture_NetProfit / stock_investment) if stock_investment > 0 else 0
-    
-    # ==================== 最優方向選擇 ====================
-    @property
-    def BestDirection(self):
-        """最佳套利方向（基於淨利潤）"""
-        profit_buy_stock = self.BuyStock_SellFuture_NetProfit
-        profit_sell_stock = self.SellStock_BuyFuture_NetProfit
-        
-        if profit_buy_stock > profit_sell_stock and profit_buy_stock > 0:
-            return "買股賣期"
-        elif profit_sell_stock > 0:
-            return "賣股買期"
-        return "無套利機會"
-    
-    @property
-    def NetProfit(self):
-        """最佳方向的淨利潤"""
-        return max(self.BuyStock_SellFuture_NetProfit, self.SellStock_BuyFuture_NetProfit)
-    
-    @property
-    def NetProfitRate(self):
-        """最佳方向的淨利率"""
-        if self.BestDirection == "買股賣期":
-            return self.BuyStock_SellFuture_NetProfitRate
-        elif self.BestDirection == "賣股買期":
-            return self.SellStock_BuyFuture_NetProfitRate
-        return 0
-    
-    @property
-    def GrossProfit(self):
-        """最佳方向的毛利潤"""
-        if self.BestDirection == "買股賣期":
-            return self.BuyStock_SellFuture_GrossProfit
-        elif self.BestDirection == "賣股買期":
-            return self.SellStock_BuyFuture_GrossProfit
-        return 0
+    def StockCost(self):
+        """計算股票交易成本 (假設為0.001425 + 0.003)"""
+        return self.stock.ask_price * 1000 * (0.001425 + 0.003) if self.stock.ask_price > 0 else 0
     
     @property
     def TotalCost(self):
-        """最佳方向的總成本"""
-        if self.BestDirection == "買股賣期":
-            return self.BuyStock_SellFuture_Cost
-        elif self.BestDirection == "賣股買期":
-            return self.SellStock_BuyFuture_Cost
-        return 0
+        """計算總成本"""
+        return self.FutureFee + self.StockCost 
     
-    # ==================== 機會評分 ====================
     @property
-    def OpportunityScore(self):
-        """機會分數（基於淨利率）"""
-        if not self.CompleteData or not self.Positive_Future or not self.Positive_Stock:
-            return 0
-        
-        rate = self.NetProfitRate
-        if rate >= 0.005:  # 0.5%以上
-            return 4
-        elif rate >= 0.003:  # 0.3%以上
-            return 3
-        elif rate >= 0.001:  # 0.1%以上
-            return 2
-        elif rate > 0:
-            return 1
-        return 0
+    def PosGrossProfit(self):
+        """正價差毛利 (價差 * 合約乘數)"""
+        return self.Spread_FutureAsk_StockBid * 1000
+    @property
+    def NegGrossProfit(self):
+        """逆價差毛利 (價差 * 合約乘數)"""
+        return self.Spread_StockAsk_FutureBid * 1000
+    
+    @property
+    def PosNetProfit(self):
+        """正價差淨利"""
+        return self.PosGrossProfit - self.TotalCost
+    
+    @property
+    def NegNetProfit(self):
+        """逆價差淨利"""
+        return self.NegGrossProfit - self.TotalCost
+    
+    @property
+    def PosNetProfitRate(self):
+        """正價差淨利率"""
+        return (self.PosNetProfit / (self.stock.ask_price * 1000)) * 100 if (self.stock.ask_price > 0 and self.PosNetProfit > 0) else 0
+    
+    @property
+    def NegNetProfitRate(self):
+        """逆價差淨利率"""
+        return (self.NegNetProfit / (self.stock.bid_price * 1000)) * 100 if (self.stock.bid_price > 0 and self.NegNetProfit > 0) else 0
+
+    # @property
+    # def EfficiencyScore(self):
+    #     """效率分數"""
+    #     return self.NetProfitRate / (abs(self.Spread_StockAsk_FutureBid) / self.future.bid_price * 100) if (self.future.bid_price > 0 and self.Spread_StockAsk_FutureBid != 0) else 0
+    
+    # @property
+    # def OpportunityScore(self):
+    #     """機會分數"""
+    #     NetProfitRate = max(self.PosNetProfitRate,self.NegNetProfitRate)
+    #     if not self.CompleteData or not self.Positive_Future or not self.Positive_Stock:
+    #         return 0
+    #     if NetProfitRate >= 0.005:
+    #         return 4
+    #     elif NetProfitRate >= 0.003:
+    #         return 3
+    #     elif NetProfitRate >= 0.001:
+    #         return 2
+    #     if NetProfitRate > 0:
+    #         return 1
+    #     return 0
 
     @property
     def ArbitrageDirection(self):
-        """套利方向（含評分判斷）"""
-        if self.OpportunityScore > 1:
-            return self.BestDirection
+        if self.Spread_FutureAsk_StockBid > 0 and self.PosNetProfit > self.NegNetProfit and self.PosNetProfitRate >= 0.001:
+            return "買股賣期(正價差)"
+        if self.Spread_StockAsk_FutureBid > 0 and self.NegNetProfitRate >= 0.001:
+            return "賣股買期(逆價差)"
         return None
 
     @property
@@ -370,7 +279,64 @@ class PriceSpreadInfo:
     def future_code(self):
         return self.future.future_no
     
+    @property
+    def complete_data(self):
+        """檢查是否有完整的買賣價資料"""
+        return (self.future.bid_price > 0 and self.future.ask_price > 0 and 
+                self.stock.bid_price > 0 and self.stock.ask_price > 0)
     
+    @property
+    def arbitrage_opportunity(self):
+        """檢查是否有套利機會"""
+        if not self.complete_data:
+            return None
+        
+        # 期貨溢價套利 (期貨高於股票)
+        future_premium = self.Spread_FutureAsk_StockBid
+        # 期貨折價套利 (股票高於期貨)
+        stock_premium = self.Spread_StockAsk_FutureBid
+        
+        return {
+            'future_premium': future_premium,
+            'stock_premium': stock_premium,
+            'has_arbitrage': abs(future_premium) > 1 or abs(stock_premium) > 1
+        }
+    
+    @property
+    def contract_spread_value(self):
+        """計算合約價差價值 (考慮合約乘數)"""
+        if self.complete_data:
+            spread = self.Spread_FutureAsk_StockBid
+            return spread * self.future.multiplier
+        return 0
+    
+    def get_spread_analysis(self):
+        """取得詳細的價差分析"""
+        return {
+            'stock_info': {
+                'code': self.stock_code,
+                'name': self.stock_name,
+                'bid': self.stock.bid_price,
+                'ask': self.stock.ask_price,
+                'close': self.stock.close_price
+            },
+            'future_info': {
+                'code': self.future_code,
+                'name': self.future.future_name,
+                'bid': self.future.bid_price,
+                'ask': self.future.ask_price,
+                'close': self.future.close_price,
+                'multiplier': self.future.multiplier
+            },
+            'spreads': {
+                'future_minus_stock': self.Spread_FutureAsk_StockBid,
+                'stock_minus_future': self.Spread_StockAsk_FutureBid,
+                'contract_value': self.contract_spread_value
+            },
+            'arbitrage': self.arbitrage_opportunity,
+            'complete_data': self.complete_data
+        }
+
 StockList = """
 元大台灣50 0050
 元大高股息 0056
@@ -1252,166 +1218,6 @@ TPK-KY期近月 TPK-KY期 TPK-KY 3673
 小型旺矽期近月 小型旺矽期 旺矽 6223
 """
 
-class StockHold:
-    """股票持倉資訊"""
-    """
-        1.	股票代號,
-        2.	庫存種類,	(T:集保 C:融資 L:融券)
-        3.	資額度(原始),
-        4.	資額度(可用),
-        5.	券額度(原始),
-        6.	券額度(可用),
-        7.	股數:昨日庫存,
-        8.	今日委買,
-        9.	今日委賣,
-        10.	今日買進成交,
-        11.	今日賣出成交,
-        12.	今日資券可回補/集保庫存可賣出,
-        13.	可資沖股數,
-        14.	可券沖股數,
-        15.	即時庫存,
-        16.	X(此欄請忽略)
-        17.	即時個股維持率,
-        18.	LOGIN_ID
-        19.	ACCOUNT_NO 
-    """
-    def __init__(self):
-        self.stock_no = ""          # 股票代號
-        self.hold_type = ""         # 庫存種類, (T:集保 C:融資 L:融券)
-        self.capital_orig = 0       # 資額度(原始)
-        self.capital_available = 0  # 資額度(可用)
-        self.loan_orig = 0          # 券額度(原始)
-        self.loan_available = 0     # 券額度(可用)
-        self.yesterday_hold = 0     # 股數:昨日庫存
-        self.today_buy_order = 0    # 今日委買
-        self.today_sell_order = 0   # 今日委賣
-        self.today_buy_exec = 0     # 今日買進成交
-        self.today_sell_exec = 0    # 今日賣出成交
-        self.today_repayable = 0    # 今日資券可回補/集保庫存可賣出
-        self.capital_offset = 0     # 可資沖股數
-        self.loan_offset = 0        # 可券沖股數
-        self.real_time_hold = 0     # 即時庫存
-        self.real_time_maintain_rate = 0.0  # 即時個股維持率
-        self.login_id = ""          # LOGIN_ID
-        self.account_no = ""        # ACCOUNT_NO
-    def update(self,seperate_list):
-        """使用分割後的列表來更新持倉資訊"""
-        try:
-            self.stock_no = seperate_list[0]
-            self.hold_type = seperate_list[1]
-            self.capital_orig = int(seperate_list[2])
-            self.capital_available = int(seperate_list[3])
-            self.loan_orig = int(seperate_list[4])
-            self.loan_available = int(seperate_list[5])
-            self.yesterday_hold = int(seperate_list[6])
-            self.today_buy_order = int(seperate_list[7])
-            self.today_sell_order = int(seperate_list[8])
-            self.today_buy_exec = int(seperate_list[9])
-            self.today_sell_exec = int(seperate_list[10])
-            self.today_repayable = int(seperate_list[11])
-            self.capital_offset = int(seperate_list[12])
-            self.loan_offset = int(seperate_list[13])
-            self.real_time_hold = int(seperate_list[14])
-            # seperate_list[15] 忽略
-            self.real_time_maintain_rate = float(seperate_list[16]) if seperate_list[16] else 0.0
-            self.login_id = seperate_list[17]
-            self.account_no = seperate_list[18]
-        except (IndexError, ValueError) as e:
-            # 處理索引錯誤或轉換錯誤
-            WriteMessage(f"Error updating StockHold: {e}", GlobalListInformation)
-
-class FutureHold:
-    """期貨持倉資訊"""
-    """
-        1	市場別
-        2	 帳號
-        3	 商品
-        4	 買賣別
-        5	 未平倉部位
-        6	 當沖未平倉部位
-        7	 平均成本(三位小數)
-        8	 一點價值
-        9	 單口手續費
-        10	 交易稅(萬分之X)
-        11	 LOGIN_ID (V2.13.30新增)
-    """
-    def __init__(self):
-        self.market = ""            # 市場別
-        self.account_no = ""        # 帳號
-        self.future_no = ""         # 商品
-        self.buy_sell = ""          # 買賣別
-        self.unclosed_position = 0  # 未平倉部位
-        self.day_trade_position = 0  # 當沖未平倉部位
-        self.avg_cost = 0.0         # 平均成本(三位小數)
-        self.point_value = 0.0      # 一點價值
-        self.fee_per_contract = 0.0  # 單口手續費
-        self.transaction_tax = 0.0   # 交易稅(萬分之X)
-        self.login_id = ""          # LOGIN_ID
-    
-    def update(self,seperate_list):
-        """使用分割後的列表來更新持倉資訊"""
-        try:
-            self.market = seperate_list[0]
-            self.account_no = seperate_list[1]
-            self.future_no = seperate_list[2]
-            self.buy_sell = seperate_list[3]
-            self.unclosed_position = int(seperate_list[4])
-            self.day_trade_position = int(seperate_list[5])
-            self.avg_cost = float(seperate_list[6]) if seperate_list[6] else 0.0
-            self.point_value = float(seperate_list[7]) if seperate_list[7] else 0.0
-            self.fee_per_contract = float(seperate_list[8]) if seperate_list[8] else 0.0
-            self.transaction_tax = float(seperate_list[9]) if seperate_list[9] else 0.0
-            if len(seperate_list) > 10:
-                self.login_id = seperate_list[10]
-        except (IndexError, ValueError) as e:
-            # 處理索引錯誤或轉換錯誤
-            WriteMessage(f"Error updating FutureHold: {e}", GlobalListInformation)
-
-class OverSeaFutureHold:
-    """海外期貨持倉資訊"""
-    """
-        (1)	海期交易所代碼
-        (2)	海期交易所中文名稱
-        (3)	帳號
-        (4)	海期商品代碼＋年月，代碼與年月間以空白區隔
-        (年月是一起，未另外以空白區隔)
-        (5)	海期選商品中文名稱  EX: 迷你S&PPUT(空格)202203(空格)3940(空格) P
-        (6)	買賣別 B:買進 S：賣出
-        (7)	數量
-        (8) 市價
-        (9) 平均成交價
-        (10) 昨日結算價
-        (11) 損益
-    """
-    def __init__(self):
-        self.exchange_code = ""     # 海期交易所代碼
-        self.exchange_name = ""     # 海期交易所中文名稱
-        self.account_no = ""        # 帳號
-        self.future_no = ""         # 海期商品代碼＋年月
-        self.future_name = ""       # 海期選商品中文名稱
-        self.buy_sell = ""          # 買賣別 B:買進 S：賣出
-        self.quantity = 0           # 數量
-        self.market_price = 0.0     # 市價
-        self.avg_price = 0.0        # 平均成交價
-        self.yesterday_settlement_price = 0.0  # 昨日結算價
-        self.profit_loss = 0.0      # 損益
-    def update(self,seperate_list):
-        """使用分割後的列表來更新持倉資訊"""
-        try:
-            self.exchange_code = seperate_list[0]
-            self.exchange_name = seperate_list[1]
-            self.account_no = seperate_list[2]
-            self.future_no = seperate_list[3]
-            self.future_name = seperate_list[4]
-            self.buy_sell = seperate_list[5]
-            self.quantity = int(seperate_list[6])
-            self.market_price = float(seperate_list[7]) if seperate_list[7] else 0.0
-            self.avg_price = float(seperate_list[8]) if seperate_list[8] else 0.0
-            self.yesterday_settlement_price = float(seperate_list[9]) if seperate_list[9] else 0.0
-            self.profit_loss = float(seperate_list[10]) if seperate_list[10] else 0.0
-        except (IndexError, ValueError) as e:
-            # 處理索引錯誤或轉換錯誤
-            WriteMessage(f"Error updating OverSeaFutureHold: {e}", GlobalListInformation)
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 # 顯示各功能狀態用的function
 def WriteMessage(strMsg, listInformation):
@@ -1455,7 +1261,7 @@ def GetMessage(strType,nCode,strMessage,listInformation):
         strInfo ="【"+ skC.SKCenterLib_GetLastLogInfo()+ "】"
     WriteMessage("【" + strType + "】【" + strMessage + "】【" + skC.SKCenterLib_GetReturnCodeMessage(nCode) + "】" + strInfo,listInformation)
 
-def load_stock_codes():
+def load_stock_codes() -> tuple[dict[str,str], dict[str,str]]:
     """從 StockList 讀取股票代碼和名稱 - 使用 pandas 優化"""
     try:
         # 使用 pandas 快速解析數據
@@ -1475,7 +1281,7 @@ def load_stock_codes():
         WriteMessage(f"加載股票代碼時發生錯誤: {e}", None)
         return {}, {}
 
-def load_future_codes():
+def load_future_codes() -> tuple[dict[str,str], dict[str,str]]:
     """從 FutureList 讀取期貨代碼和名稱 - 使用 pandas 優化"""
     try:
         # 使用 pandas 快速解析數據
@@ -1495,7 +1301,7 @@ def load_future_codes():
         WriteMessage(f"加載期貨代碼時發生錯誤: {e}", None)
         return {}, {}
 
-def get_all_items():
+def get_all_items() -> dict[str,Union[StockInfo,FutureInfo]]:
     count = 1 
     all_items = {}
     for code, name in future_codes_to_name.items():
@@ -1512,24 +1318,6 @@ def get_all_items():
         count += 1
     return all_items
 
-stock_codes_to_name, stock_name_to_codes = load_stock_codes()
-future_codes_to_name,future_name_to_codes = load_future_codes()
-all_stocks = get_all_items()  
-spread_map = {}
-stock_to_spreadmap_index = {}
-future_to_spreadmap_index = {}
-SubCompanyCode_TS = "0"
-Account_ID_TS = "0"
-SubCompanyCode_TF = "0"
-Account_ID_TF = "0"
-SubCompanyCode_OF = "0"
-Account_ID_OF = "0"
-Login_ID = ''
-
-Hold_TS = {}
-Hold_TF = {}
-Hold_OF = {}
-
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 # 登入頁面
 class FrameLogin(Frame):
@@ -1538,7 +1326,6 @@ class FrameLogin(Frame):
         self.FrameLogin = Frame(self)
         self.FrameLogin.pack(fill="both", expand=True)
         self.createWidgets()
-    
     def createWidgets(self):
         # 使用者ID
         # === 登入區塊 ===
@@ -1631,14 +1418,13 @@ class FrameLogin(Frame):
             # 設定日誌路徑
             log_path = os.path.split(os.path.realpath(__file__))[0] + "\\CapitalLog_Quote"
             m_nCode = skC.SKCenterLib_SetLogPath(log_path)
-            self.add_message(f"日誌路徑設定: {log_path}")            
+            self.add_message(f"日誌路徑設定: {log_path}")
             
+            self.add_message(f"{user_id} , {password}")
             # 登入
             m_nCode = skC.SKCenterLib_Login(user_id, password)
             
             if m_nCode == 0:
-                global Login_ID
-                Login_ID = user_id
                 self.label_login_status.config(text="已登入", foreground="green")
                 self.btn_connection.config(state="normal")
                 Global_ID["text"] = user_id
@@ -1720,6 +1506,13 @@ class FrameLogin(Frame):
                 self.add_message(f"訊息已匯出至: {filename}", GlobalListInformation)
         except Exception as e:
             self.add_message(f"匯出訊息失敗: {str(e)}")
+
+stock_codes_to_name , stock_name_to_codes = load_stock_codes()
+future_codes_to_name ,future_name_to_codes = load_future_codes()
+all_stocks = get_all_items()  
+spread_map : dict[int,PriceSpreadInfo] = {}
+stock_to_spreadmap_index : dict[StockInfo,int] = {}
+future_to_spreadmap_index : dict[FutureInfo,int] = {}
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 # 報價頁面
@@ -2750,8 +2543,8 @@ class FrameInformation(Frame):
                     stock_close = spread_info.stock.close_price
 
                     # 計算價差
-                    future_to_stock_diff = (future_bid - stock_ask) if (future_bid > 0 and stock_ask > 0) else 0
-                    stock_to_future_diff = (stock_bid - future_ask) if (stock_bid > 0 and future_ask > 0) else 0
+                    future_to_stock_diff = (future_ask - stock_bid) if (stock_bid > 0 and future_ask > 0) else 0
+                    stock_to_future_diff = (stock_ask - future_bid) if (future_bid > 0 and stock_ask > 0) else 0
 
                     future_name = future_codes_to_name.get(spread_info.future.future_no, "")
                     stock_name = stock_codes_to_name.get(spread_info.stock.stock_no, "")
@@ -2914,13 +2707,13 @@ class FrameOutput(Frame):
         table_frame.pack(fill="both", expand=True, padx=10, pady=5)
     
         # 建立Treeview表格 - 類似圖片中的格式
-        columns = ("股票名稱","股票代碼", "期貨名稱", "期貨代碼", "機會評級", "套利方向", "淨利潤", "股票買價", "期貨賣價", "股票賣價", "期貨買價" )
+        columns = ("股票名稱","股票代碼", "期貨名稱", "期貨代碼", "正價差" , "逆價差" ,"套利方向", "淨利潤", "總交易成本"  )
         
         self.output_tree = ttk.Treeview(table_frame, columns=columns, show="headings", height=25)
         
         # 設定欄位標題和寬度
         column_widths = {
-            "股票名稱": 100, "股票代碼": 100, "期貨名稱": 100, "期貨代碼": 100, "機會評級": 100, "套利方向": 100, "淨利潤": 100, "股票買價": 100, "期貨賣價": 100, "股票賣價": 100, "期貨買價": 100
+            "股票名稱": 100, "股票代碼": 100, "期貨名稱": 100, "期貨代碼": 100, "正價差": 100 , "逆價差": 100, "套利方向": 100, "淨利潤": 100, "總交易成本": 100
         }
         for col in columns:
             self.output_tree.heading(col, text=col)
@@ -2974,31 +2767,33 @@ class FrameOutput(Frame):
                 self.output_tree.delete(item)
             all_items = []
             for index, spread_info in spread_map.items():
-                if spread_info.ArbitrageDirection != None and spread_info.OpportunityScore != 1:
+                # if spread_info.ArbitrageDirection != None and spread_info.OpportunityScore != 1:
+                if spread_info.ArbitrageDirection != None:
                     values = (
                         stock_codes_to_name[spread_info.stock.stock_no] or "",
                         spread_info.stock.stock_no or "",
                         future_codes_to_name[spread_info.future.future_no] or "",
                         spread_info.future.future_no or "",
-                        str(spread_info.OpportunityScore) or "",
+                        f"{spread_info.Spread_FutureAsk_StockBid:.2f}",
+                        f"{spread_info.Spread_StockAsk_FutureBid:.2f}",
+                        # str(spread_info.OpportunityScore) or "",
                         spread_info.ArbitrageDirection or "",
-                        f"{spread_info.NetProfit:.2f}" if spread_info.NetProfit != 0 else "0.00",
-                        f"{spread_info.stock.bid_price:.2f}" if spread_info.stock.bid_price > 0 else "0.00",
-                        f"{spread_info.future.ask_price:.2f}" if spread_info.future.ask_price > 0 else "0.00",
-                        f"{spread_info.stock.ask_price:.2f}" if spread_info.stock.ask_price > 0 else "0.00",
-                        f"{spread_info.future.bid_price:.2f}" if spread_info.future.bid_price > 0 else "0.00",
+                        f"{max(spread_info.PosNetProfit,spread_info.NegNetProfit):.2f}",
+                        f"{spread_info.TotalCost:.2f}",
                     )
-                    all_items.append((str(spread_info.OpportunityScore), values))
+                    # all_items.append((str(spread_info.OpportunityScore),values))
+                    all_items.append(values)
                 # 先照機會評級排，再用淨利潤排序
-                all_items.sort(key=lambda t: (int(t[0]), float(t[1][6])), reverse=True)  # 按機會評級和淨利潤排序
+                # all_items.sort(key=lambda t: (int(t[0]),float(t[1][6])), reverse=True)  # 按機會評級和淨利潤排序
+                all_items.sort(key=lambda t: (float(t[7])), reverse=True)  # 按淨利潤排序
 
-            for score, values in all_items:
+            for values in all_items:
                 self.output_tree.insert("", "end", values=values)
         except Exception as e:
             WriteMessage(f"更新輸出表格時發生錯誤: {str(e)}", GlobalListInformation)
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
-# 公告視窗
+# 📢 公告視窗
 class AnnouncementDialog:
     """程式啟動公告視窗"""
     def __init__(self, parent):
@@ -3097,9 +2892,14 @@ class AnnouncementDialog:
 【公告版】
     - 新增程式啟動公告視窗
     - 告知版本差異
+• v1.4 - 修改正價差逆價差公式
+【整理】
+    - 修改正價差跟逆價差公式
+    - 加上總交易成本欄位
 
 👍 祝您交易順利！
-"""     
+"""
+        
         content_text.insert("1.0", announcement)
         content_text.config(state="disabled")  # 設定為只讀
         
@@ -3163,251 +2963,6 @@ class AnnouncementDialog:
         return True
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
-# 持倉頁面
-class FrameHold(Frame):
-    def __init__(self, root=None):
-        Frame.__init__(self)
-        self.Hold = Frame(self)
-        self.Hold.pack(fill="both", expand=True)
-
-        self.main_window = root
-
-        self.Hold_timer_id = None
-        self.createWidgets()
-
-    def createWidgets(self):
-        # 控制區域
-        control_frame = ttk.LabelFrame(self.Hold, text="持倉控制")
-        control_frame.pack(fill="x", padx=10, pady=5)
-        
-        # 開始持倉按鈕
-        self.btn_start_hold = ttk.Button(control_frame, text="開始持倉", command=self.start_hold)
-        self.btn_start_hold.pack(side="left", padx=5, pady=5)
-
-        # 停止持倉按鈕
-        self.btn_stop_hold = ttk.Button(control_frame, text="停止持倉", command=self.stop_hold)
-        self.btn_stop_hold.pack(side="left", padx=5, pady=5)
-        self.btn_stop_hold.config(state="disabled")
-
-        # 期貨監控表格區域
-        table_TF_frame = ttk.LabelFrame(self.Hold, text="期貨持倉監控")
-        table_TF_frame.pack(fill="both", expand=True, padx=10, pady=5)
-
-        # 股票監控表格區域
-        table_TS_frame = ttk.LabelFrame(self.Hold, text="股票持倉監控")
-        table_TS_frame.pack(fill="both", expand=True, padx=10, pady=5)
-
-        # 建立Treeview表格 - 類似圖片中的格式
-        columns_TS = ("股票代號", "股票名稱", "今日委買", "今日委賣", "今日買進成交", "今日賣出成交", "及時庫存", "Login_ID", "Account_No")
-        columns_TF = ("市場別", "帳號", "商品", "買賣別", "未平倉部位", "當沖未平倉部位", "平均成本", "一點價值", "單口手續費", "交易稅", "Login_ID")
-
-        self.hold_tree_TS = ttk.Treeview(table_TS_frame, columns=columns_TS, show="headings", height=25)
-        self.hold_tree_TS.pack(fill="both", expand=True, side="top")
-
-        self.hold_tree_TF = ttk.Treeview(table_TF_frame, columns=columns_TF, show="headings", height=15)
-        self.hold_tree_TF.pack(fill="both", expand=True, side="bottom")
-
-        # 設定欄位標題和寬度
-        column_widths_TS = {
-            "股票代號": 100, "股票名稱": 100, "今日委買": 100, "今日委賣": 100, "今日買進成交": 100, "今日賣出成交": 100, "及時庫存": 100, "Login_ID": 100, "Account_No": 100
-        }
-
-        column_widths_TF = {
-            "市場別": 100, "帳號": 100, "商品": 100, "買賣別": 100, "未平倉部位": 100, "當沖未平倉部位": 100, "平均成本": 100, "一點價值": 100, "單口手續費": 100, "交易稅": 100, "Login_ID": 100
-        }
-        for col in columns_TS:
-            self.hold_tree_TS.heading(col, text=col)
-            self.hold_tree_TS.column(col, width=column_widths_TS.get(col, 100))
-
-        for col in columns_TF:
-            self.hold_tree_TF.heading(col, text=col)
-            self.hold_tree_TF.column(col, width=column_widths_TF.get(col, 100))
-    
-    def start_hold(self):
-        WriteMessage(f"開始更新持倉 ({len(all_stocks)} 筆資料)...", GlobalListInformation)
-        self.btn_start_hold.config(state="disabled")
-        self.btn_stop_hold.config(state="normal")
-        Check_Initialize = skO.SKOrderLib_Initialize()
-        if( Check_Initialize == 0 ):
-            WriteMessage("SKOrderLib 初始化成功", GlobalListInformation)    
-        else:
-            WriteMessage(f"SKOrderLib 初始化失敗: {Check_Initialize}", GlobalListInformation)
-            
-        Check_GetUserAccount = skO.GetUserAccount()
-        if( Check_GetUserAccount == 0 ):
-            WriteMessage("取得帳號成功", GlobalListInformation)
-        else:
-            WriteMessage(f"取得帳號失敗: {Check_GetUserAccount}", GlobalListInformation)
-        
-        Check_GetRealBalanceReport = skO.GetRealBalanceReport(Login_ID, SubCompanyCode_TS + Account_ID_TS)
-        if( Check_GetRealBalanceReport == 0 ):
-            WriteMessage("取得股票即時庫存成功", GlobalListInformation)
-        else:
-            WriteMessage(f"取得股票即時庫存失敗: {Check_GetRealBalanceReport}", GlobalListInformation)  
-        
-        Check_GetOpenInterest = skO.GetOpenInterest(Login_ID, SubCompanyCode_TF + Account_ID_TF)
-        if( Check_GetOpenInterest == 0 ):
-            WriteMessage("取得期貨未平倉成功", GlobalListInformation)
-        else:
-            WriteMessage(f"取得期貨未平倉失敗: {Check_GetOpenInterest}", GlobalListInformation)
-        
-        # Check_GetOverseaFutureOpenInterest = skO.GetOverseaFutureOpenInterest(Login_ID, SubCompanyCode_OF + Account_ID_OF)
-        # if( Check_GetOverseaFutureOpenInterest == 0 ):
-        #     WriteMessage("取得海外期貨未平倉成功", GlobalListInformation)
-        # else:
-        #     WriteMessage(f"取得海外期貨未平倉失敗: {Check_GetOverseaFutureOpenInterest}", GlobalListInformation)
-        # 啟動持倉更新計時器
-        self.start_hold_timer()
-
-    def start_hold_timer(self):
-        """開始持倉更新計時器"""
-        def update_hold():
-            try:
-                self.update_hold_grid()
-                # 排程下次更新
-                self.Hold_timer_id = self.main_window.after(1000, update_hold)  # 每秒更新
-            except Exception as e:
-                WriteMessage(f"更新持倉資訊時發生錯誤: {str(e)}", GlobalListInformation)
-        
-        # 開始更新循環
-        self.Hold_timer_id = self.main_window.after(100, update_hold)
-    def stop_hold(self):
-        try:
-            if self.Hold_timer_id:
-                self.main_window.after_cancel(self.Hold_timer_id)
-                self.Hold_timer_id = None
-
-            self.btn_start_hold.config(state="normal")
-            self.btn_stop_hold.config(state="disabled")
-
-            WriteMessage("已停止持倉", GlobalListInformation)
-        except Exception as e:
-            WriteMessage(f"停止持倉時發生錯誤: {str(e)}", GlobalListInformation)
-    def update_hold_grid(self):
-        try:
-            for item in self.hold_tree_TS.get_children():
-                self.hold_tree_TS.delete(item)
-            all_items_TS = []
-            for hold in Hold_TS:
-                values = (
-                    hold.stock_no or "",
-                    stock_codes_to_name.get(hold.stock_no, "") or "",
-                    str(hold.today_buy_volume) if hold.today_buy_volume != 0 else "0",
-                    str(hold.today_sell_volume) if hold.today_sell_volume != 0 else "0",
-                    str(hold.today_buy_deal) if hold.today_buy_deal != 0 else "0",
-                    str(hold.today_sell_deal) if hold.today_sell_deal != 0 else "0",
-                    str(hold.current_volume) if hold.current_volume != 0 else "0",
-                    hold.login_id or "",
-                    hold.account_no or ""
-                )
-                all_items_TS.append(values)
-            for values in all_items_TS:
-                self.hold_tree_TS.insert("", "end", values=values)
-            
-            for item in self.hold_tree_TF.get_children():
-                self.hold_tree_TF.delete(item)
-            all_items_TF = []
-            for hold in Hold_TF:
-                values = (
-                    hold.market_no or "",
-                    hold.account_no or "",
-                    hold.future_no or "",
-                    hold.buy_sell or "",
-                    str(hold.open_interest) if hold.open_interest != 0 else "0",
-                    str(hold.today_open_interest) if hold.today_open_interest != 0 else "0",
-                    f"{hold.avg_price:.2f}" if hold.avg_price > 0 else "0.00",
-                    f"{hold.point_value:.2f}" if hold.point_value > 0 else "0.00",
-                    f"{hold.fee_per_lot:.2f}" if hold.fee_per_lot > 0 else "0.00",
-                    f"{hold.tax:.2f}" if hold.tax > 0 else "0.00",
-                    hold.login_id or ""
-                )
-                all_items_TF.append(values)
-            for values in all_items_TF:
-                self.hold_tree_TF.insert("", "end", values=values)
-
-        except Exception as e:
-            WriteMessage(f"更新持倉表格時發生錯誤: {str(e)}", GlobalListInformation)
-
-
-#----------------------------------------------------------------------------------------------------------------------------------------------------
-# 回報頁面
-class FrameReport(Frame):
-    def __init__(self, root=None):
-        Frame.__init__(self)
-        self.Report = Frame(self)
-        self.Report.pack(fill="both", expand=True)
-
-        self.main_window = root
-
-        self.Report_timer_id = None
-        self.createWidgets()
-
-    def createWidgets(self):
-        # 期貨回報表格區域
-        table_TF_frame = ttk.LabelFrame(self.Report, text="期貨回報監控")
-        table_TF_frame.pack(fill="both", expand=True, padx=10, pady=5)
-
-        # 股票回報表格區域
-        table_TS_frame = ttk.LabelFrame(self.Report, text="股票回報監控")
-        table_TS_frame.pack(fill="both", expand=True, padx=10, pady=5)
-
-        # 建立Treeview表格 - 類似圖片中的格式
-        columns_TS = ("股票代號", "股票名稱", "今日委買", "今日委賣", "今日買進成交", "今日賣出成交", "及時庫存", "Login_ID", "Account_No")
-        columns_TF = ("市場別", "帳號", "商品", "買賣別", "未平倉部位", "當沖未平倉部位", "平均成本", "一點價值", "單口手續費", "交易稅", "Login_ID")
-
-        self.report_tree_TS = ttk.Treeview(table_TS_frame, columns=columns_TS, show="headings", height=25)
-        self.report_tree_TS.pack(fill="both", expand=True, side="top")
-
-        self.report_tree_TF = ttk.Treeview(table_TF_frame, columns=columns_TF, show="headings", height=15)
-        self.report_tree_TF.pack(fill="both", expand=True, side="bottom")
-
-        # 設定欄位標題和寬度
-        column_widths_TS = {
-            "股票代號": 100, "股票名稱": 100, "今日委買": 100, "今日委賣": 100, "今日買進成交": 100, "今日賣出成交": 100, "及時庫存": 100, "Login_ID": 100, "Account_No": 100
-        }
-
-        column_widths_TF = {
-            "市場別": 100, "帳號": 100, "商品": 100, "買賣別": 100, "未平倉部位": 100, "當沖未平倉部位": 100, "平均成本": 100, "一點價值": 100, "單口手續費": 100, "交易稅": 100, "Login_ID": 100
-        }
-        for col in columns_TS:
-            self.report_tree_TS.heading(col, text=col)
-            self.report_tree_TS.column(col, width=column_widths_TS.get(col, 100))
-
-        for col in columns_TF:
-            self.report_tree_TF.heading(col, text=col)
-            self.report_tree_TF.column(col, width=column_widths_TF.get(col, 100))
-
-#----------------------------------------------------------------------------------------------------------------------------------------------------
-# 下單頁面
-class FrameOrder(Frame):
-    def __init__(self, root=None):
-        Frame.__init__(self)
-        self.Order = Frame(self)
-        self.Order.pack(fill="both", expand=True)
-
-        self.main_window = root
-
-        self.createWidgets()
-    def createWidgets(self):
-        # 控制區域
-        control_frame = ttk.LabelFrame(self.Order, text="下單控制")
-        control_frame.pack(fill="x", padx=10, pady=5)
-        
-        # 下單按鈕
-        self.btn_order = ttk.Button(control_frame, text="下單", command=self.place_order)
-        self.btn_order.pack(side="left", padx=5, pady=5)
-
-        # 取消按鈕
-        self.btn_cancel = ttk.Button(control_frame, text="取消", command=self.cancel_order)
-        self.btn_cancel.pack(side="left", padx=5, pady=5)
-
-        # 狀態顯示區域
-        status_frame = ttk.LabelFrame(self.Order, text="下單狀態")
-        status_frame.pack(fill="both", expand=True, padx=10, pady=5)
-
-        self.status_text = Text(status_frame, height=20, wrap="word")
-        self.status_text.pack(fill="both", expand=True, padx=5, pady=5)
-#----------------------------------------------------------------------------------------------------------------------------------------------------
 # 事件        
 class SKQuoteLibEvents:
     def OnConnection(self, nKind, nCode):
@@ -3445,15 +3000,17 @@ class SKQuoteLibEvents:
             if stock_no in stock_to_spreadmap_index:
                 # 這是股票
                 index = stock_to_spreadmap_index[stock_no]
-                spread_map[index].stock.update(stock_data)
-                spread_map[index].stock.stock_no = stock_no
+                spread_info = spread_map[index]
+                spread_info.stock.update(stock_data)
+                spread_info.stock.stock_no = stock_no
                 # WriteMessage(f"更新股票資料: {stock_no}")
                 
             elif stock_no in future_to_spreadmap_index:
                 # 這是期貨
                 index = future_to_spreadmap_index[stock_no]
-                spread_map[index].future.update(stock_data)
-                spread_map[index].future.future_no = stock_no
+                spread_info = spread_map[index]
+                spread_info.future.update(stock_data)
+                spread_info.future.future_no = stock_no
                 # WriteMessage(f"更新期貨資料: {stock_no}")
             
             # 更新通用股票資料
@@ -3477,89 +3034,6 @@ class SKReplyLibEvent():
 
 SKReplyEvent = SKReplyLibEvent()
 SKReplyLibEventHandler = comtypes.client.GetEvents(skR, SKReplyEvent)
-
-class SKOrderLibEvents:
-    # def __init__(self, master=None, information=None):
-    #     self.__master = master
-    #     # UI variable
-    #     self.__dOrder = dict(
-    #         listInformation = information,
-    #         txtID = '',
-    #         boxAccount = '',
-    #     )
-    def OnAccount(self, bstrLogInID, bstrAccountData):
-        bstrAccountData = bstrAccountData.split(',')
-        global SubCompanyCode_TS, Account_ID_TS
-        global SubCompanyCode_TF, Account_ID_TF
-        global SubCompanyCode_OF, Account_ID_OF
-        if(bstrAccountData[0] == 'TS'):
-            SubCompanyCode_TS = bstrAccountData[1]
-            Account_ID_TS = bstrAccountData[3]
-        if(bstrAccountData[0] == 'TF'):
-            SubCompanyCode_TF = bstrAccountData[1]
-            Account_ID_TF = bstrAccountData[3]
-        if(bstrAccountData[0] == 'OF'):
-            SubCompanyCode_OF = bstrAccountData[1]
-            Account_ID_OF = bstrAccountData[3]
-        WriteMessage(f"OnAccount 回傳帳號資訊", GlobalListInformation)
-
-    def OnRealBalanceReport(self,bstrData):
-        strMsg = bstrData.split(',')
-        if(strMsg[0] != "##"):
-            SH = StockHold()
-            SH.update(strMsg)
-            Hold_TS[SH.stock_no] = SH
-        WriteMessage("TS 持倉回報",GlobalListInformation)
-    
-    def OnOpenInterest(self,bstrData):
-        strMsg = bstrData.split(',')
-
-        if(strMsg[0] != "##" and strMsg[0] != "001"):
-            FH = FutureHold()
-            FH.update(strMsg)
-            Hold_TF[FH.future_no] = FH
-        """            
-            當全部資料已經全部回傳完畢，將回傳一筆以「##」開頭的內容，表示查詢結束。
-            若查無資料，則回傳[001,查無資料]。
-        """
-        WriteMessage("TF 持倉回報",GlobalListInformation)
-
-    def OnOverseaFutureOpenInterest(self,bstrData):
-        strMsg = bstrData.split(',')
-        if(strMsg[0] == "@@" and strMsg[1] != "001"):
-            OFH = FutureHold()
-            OFH.update(strMsg)
-            Hold_OF[OFH.future_no] = OFH
-        """
-            第一筆回傳內容為 「@@」開頭，表示查詢狀態，每一筆資料以「,」分隔每一個欄位，欄位依序為「@@,訊息代碼,訊息內容」
-            其中，當訊息代碼為 
-
-            0：表示查詢成功，訊息內容為空字串
-            其他非「0」皆表示查詢錯誤，訊息內容將描述錯誤原因
-
-            如有未平倉資訊將從第二筆開始回傳，每一筆資料以「,」分隔每一個欄位
-        """
-        WriteMessage("OF 持倉回報",GlobalListInformation)
-
-    def OnBalanceQuery(self, bstrData):
-        strMsg = bstrData.split(',')
-        m_nCode = skO.OnBalanceQuery(strMsg)
-        self.__oMsg.SendReturnMessage("Order", m_nCode, "OnBalanceQuery", self.__dOrder['listInformation'])
-        WriteMessage(strMsg,GlobalListInformation)
-
-    def OnRequestProfitReport(self, bstrData):
-        strMsg = bstrData.split(',')
-        m_nCode = skO.OnRequestProfitReport(strMsg)
-        self.__oMsg.SendReturnMessage("Order", m_nCode, "OnRequestProfitReport", self.__dOrder['listInformation'])
-        WriteMessage(strMsg,GlobalListInformation)
-
-    def OnMarginPurchaseAmountLimit(self,bstrData):
-        strMsg = bstrData.split(',')
-        self.oMsg.WriteMessage(strMsg,self.__dOrder['listInformation'])
-        WriteMessage(strMsg,GlobalListInformation)
-
-SKOrderEvent = SKOrderLibEvents()
-SKOrderLibEventHandler = comtypes.client.GetEvents(skO, SKOrderEvent)
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 # 主函式
@@ -3592,10 +3066,6 @@ if __name__ == '__main__':
     output_frame = FrameOutput(root=root)
     notebook.add(output_frame, text="輸出")
 
-    # 持倉頁面
-    hold_frame = FrameHold(root=root)
-    notebook.add(hold_frame, text="持倉")
-    
     # 啟動 COM 事件處理隊列
     process_com_events(root)
 

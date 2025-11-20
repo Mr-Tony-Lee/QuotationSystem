@@ -10,6 +10,7 @@ import comtypes.client
 import comtypes.gen.SKCOMLib as sk
 import pandas as pd
 from io import StringIO
+from typing import Union
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 # 創建一個全域的消息隊列來處理 COM 事件
@@ -161,20 +162,22 @@ class PriceSpreadInfo:
         self.future = FutureInfo()  # 使用 FutureInfo 而非 StockInfo
     
     @property
-    def Spread_StockAsk_FutureBid(self):
-        """ 期貨賣價 - 股票買價(做多期貨、做空股票的價差)"""
-        return self.future.ask_price - self.stock.bid_price if (self.stock.ask_price > 0 and self.future.bid_price > 0) else 0
+    def Spread_FutureAsk_StockBid(self):
+        """ 正價差 : 期貨賣價 - 股票買價 > 0 """
+        """ 做多現貨、做空期貨"""
+        return self.future.ask_price - self.stock.bid_price if (self.future.ask_price > 0 and self.stock.bid_price > 0) else 0
+        
 
     @property
-    def Spread_FutureAsk_StockBid(self):
-        """股票賣價 - 期貨買價 (做多股票、做空期貨的價差)"""
-        return self.stock.ask_price - self.future.bid_price if (self.future.ask_price > 0 and self.stock.bid_price > 0) else 0
+    def Spread_StockAsk_FutureBid(self):
+        """逆價差 : 股票賣價 - 期貨買價"""
+        """ 做多期貨、做空現貨"""
+        return self.stock.ask_price - self.future.bid_price if (self.stock.ask_price > 0 and self.future.bid_price > 0) else 0
 
     @property
     def CompleteData(self):
         """檢查是否有完整的買賣價資料"""
-        return (self.future.bid_price > 0 and self.future.ask_price > 0 and
-                self.stock.bid_price > 0 and self.stock.ask_price > 0)
+        return (self.future.bid_price > 0 and self.future.ask_price > 0 and self.stock.bid_price > 0 and self.stock.ask_price > 0)
     
     @property
     def Positive_Future(self):
@@ -196,57 +199,66 @@ class PriceSpreadInfo:
         """計算股票交易成本 (假設為0.001425 + 0.003)"""
         return self.stock.ask_price * 1000 * (0.001425 + 0.003) if self.stock.ask_price > 0 else 0
     
-    # @property
-    # def ExpectProfit(self):
-    #     """預期華價 (期貨賣價 - 期貨買價 + 股票賣價 - 股票買價) * 合約乘數"""
-    #     return (self.future.ask_price - self.future.bid_price + self.stock.ask_price - self.stock.bid_price) * 500 if (self.future.ask_price > 0 and self.future.bid_price > 0 and self.stock.ask_price > 0 and self.stock.bid_price > 0) else 0
-    
     @property
     def TotalCost(self):
         """計算總成本"""
-        # return self.FutureFee + self.StockCost + self.ExpectProfit
         return self.FutureFee + self.StockCost 
     
     @property
-    def GrossProfit(self):
-        """毛利 (價差 * 合約乘數)"""
-        return abs(self.Spread_StockAsk_FutureBid) * 1000
+    def PosGrossProfit(self):
+        """正價差毛利 (價差 * 合約乘數)"""
+        return self.Spread_FutureAsk_StockBid * 1000
+    @property
+    def NegGrossProfit(self):
+        """逆價差毛利 (價差 * 合約乘數)"""
+        return self.Spread_StockAsk_FutureBid * 1000
     
     @property
-    def NetProfit(self):
-        """淨利 (毛利 - 總成本)"""
-        return max(self.GrossProfit - self.TotalCost, 0)
+    def PosNetProfit(self):
+        """正價差淨利"""
+        return self.PosGrossProfit - self.TotalCost
     
     @property
-    def NetProfitRate(self):
-        """淨利率"""
-        return (self.NetProfit / (self.future.bid_price * 1000)) * 100 if (self.future.bid_price > 0 and self.NetProfit > 0) else 0
+    def NegNetProfit(self):
+        """逆價差淨利"""
+        return self.NegGrossProfit - self.TotalCost
     
     @property
-    def EfficiencyScore(self):
-        """效率分數"""
-        return self.NetProfitRate / (abs(self.Spread_StockAsk_FutureBid) / self.future.bid_price * 100) if (self.future.bid_price > 0 and self.Spread_StockAsk_FutureBid != 0) else 0
+    def PosNetProfitRate(self):
+        """正價差淨利率"""
+        return (self.PosNetProfit / (self.stock.ask_price * 1000)) * 100 if (self.stock.ask_price > 0 and self.PosNetProfit > 0) else 0
     
     @property
-    def OpportunityScore(self):
-        """機會分數"""
-        if not self.CompleteData or not self.Positive_Future or not self.Positive_Stock:
-            return 0
-        if self.NetProfitRate >= 0.005:
-            return 4
-        elif self.NetProfitRate >= 0.003:
-            return 3
-        elif self.NetProfitRate >= 0.001:
-            return 2
-        if self.NetProfitRate > 0:
-            return 1
-        return 0
+    def NegNetProfitRate(self):
+        """逆價差淨利率"""
+        return (self.NegNetProfit / (self.stock.bid_price * 1000)) * 100 if (self.stock.bid_price > 0 and self.NegNetProfit > 0) else 0
+
+    # @property
+    # def EfficiencyScore(self):
+    #     """效率分數"""
+    #     return self.NetProfitRate / (abs(self.Spread_StockAsk_FutureBid) / self.future.bid_price * 100) if (self.future.bid_price > 0 and self.Spread_StockAsk_FutureBid != 0) else 0
+    
+    # @property
+    # def OpportunityScore(self):
+    #     """機會分數"""
+    #     NetProfitRate = max(self.PosNetProfitRate,self.NegNetProfitRate)
+    #     if not self.CompleteData or not self.Positive_Future or not self.Positive_Stock:
+    #         return 0
+    #     if NetProfitRate >= 0.005:
+    #         return 4
+    #     elif NetProfitRate >= 0.003:
+    #         return 3
+    #     elif NetProfitRate >= 0.001:
+    #         return 2
+    #     if NetProfitRate > 0:
+    #         return 1
+    #     return 0
 
     @property
     def ArbitrageDirection(self):
-        if self.Spread_StockAsk_FutureBid > 0 and self.OpportunityScore > 1:
+        if self.Spread_FutureAsk_StockBid > 0 and self.PosNetProfit > self.NegNetProfit and self.PosNetProfitRate >= 0.001:
             return "買股賣期(正價差)"
-        if self.Spread_FutureAsk_StockBid > 0 and self.OpportunityScore > 1:
+        if self.Spread_StockAsk_FutureBid > 0 and self.NegNetProfitRate >= 0.001:
             return "賣股買期(逆價差)"
         return None
 
@@ -269,16 +281,6 @@ class PriceSpreadInfo:
         return self.future.future_no
     
     @property
-    def spread_future_bid_stock_ask(self):
-        """期貨買價 - 股票賣價 (做多期貨、做空股票的價差)"""
-        return self.future.bid_price - self.stock.ask_price if (self.future.bid_price > 0 and self.stock.ask_price > 0) else 0
-    
-    @property
-    def spread_stock_bid_future_ask(self):
-        """股票買價 - 期貨賣價 (做多股票、做空期貨的價差)"""
-        return self.stock.bid_price - self.future.ask_price if (self.stock.bid_price > 0 and self.future.ask_price > 0) else 0
-    
-    @property
     def complete_data(self):
         """檢查是否有完整的買賣價資料"""
         return (self.future.bid_price > 0 and self.future.ask_price > 0 and 
@@ -291,9 +293,9 @@ class PriceSpreadInfo:
             return None
         
         # 期貨溢價套利 (期貨高於股票)
-        future_premium = self.spread_future_bid_stock_ask
+        future_premium = self.Spread_FutureAsk_StockBid
         # 期貨折價套利 (股票高於期貨)
-        stock_premium = self.spread_stock_bid_future_ask
+        stock_premium = self.Spread_StockAsk_FutureBid
         
         return {
             'future_premium': future_premium,
@@ -305,7 +307,7 @@ class PriceSpreadInfo:
     def contract_spread_value(self):
         """計算合約價差價值 (考慮合約乘數)"""
         if self.complete_data:
-            spread = self.spread_future_bid_stock_ask
+            spread = self.Spread_FutureAsk_StockBid
             return spread * self.future.multiplier
         return 0
     
@@ -328,8 +330,8 @@ class PriceSpreadInfo:
                 'multiplier': self.future.multiplier
             },
             'spreads': {
-                'future_minus_stock': self.spread_future_bid_stock_ask,
-                'stock_minus_future': self.spread_stock_bid_future_ask,
+                'future_minus_stock': self.Spread_FutureAsk_StockBid,
+                'stock_minus_future': self.Spread_StockAsk_FutureBid,
                 'contract_value': self.contract_spread_value
             },
             'arbitrage': self.arbitrage_opportunity,
@@ -1260,7 +1262,7 @@ def GetMessage(strType,nCode,strMessage,listInformation):
         strInfo ="【"+ skC.SKCenterLib_GetLastLogInfo()+ "】"
     WriteMessage("【" + strType + "】【" + strMessage + "】【" + skC.SKCenterLib_GetReturnCodeMessage(nCode) + "】" + strInfo,listInformation)
 
-def load_stock_codes():
+def load_stock_codes() -> tuple[dict[str,str], dict[str,str]]:
     """從 StockList 讀取股票代碼和名稱 - 使用 pandas 優化"""
     try:
         # 使用 pandas 快速解析數據
@@ -1280,7 +1282,7 @@ def load_stock_codes():
         WriteMessage(f"加載股票代碼時發生錯誤: {e}", None)
         return {}, {}
 
-def load_future_codes():
+def load_future_codes() -> tuple[dict[str,str], dict[str,str]]:
     """從 FutureList 讀取期貨代碼和名稱 - 使用 pandas 優化"""
     try:
         # 使用 pandas 快速解析數據
@@ -1300,7 +1302,7 @@ def load_future_codes():
         WriteMessage(f"加載期貨代碼時發生錯誤: {e}", None)
         return {}, {}
 
-def get_all_items():
+def get_all_items() -> dict[str,Union[StockInfo,FutureInfo]]:
     count = 1 
     all_items = {}
     for code, name in future_codes_to_name.items():
@@ -1506,12 +1508,12 @@ class FrameLogin(Frame):
         except Exception as e:
             self.add_message(f"匯出訊息失敗: {str(e)}")
 
-stock_codes_to_name, stock_name_to_codes = load_stock_codes()
-future_codes_to_name,future_name_to_codes = load_future_codes()
+stock_codes_to_name , stock_name_to_codes = load_stock_codes()
+future_codes_to_name ,future_name_to_codes = load_future_codes()
 all_stocks = get_all_items()  
-spread_map = {}
-stock_to_spreadmap_index = {}
-future_to_spreadmap_index = {}
+spread_map : dict[int,PriceSpreadInfo] = {}
+stock_to_spreadmap_index : dict[StockInfo,int] = {}
+future_to_spreadmap_index : dict[FutureInfo,int] = {}
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 # 報價頁面
@@ -2542,8 +2544,8 @@ class FrameInformation(Frame):
                     stock_close = spread_info.stock.close_price
 
                     # 計算價差
-                    future_to_stock_diff = (future_bid - stock_ask) if (future_bid > 0 and stock_ask > 0) else 0
-                    stock_to_future_diff = (stock_bid - future_ask) if (stock_bid > 0 and future_ask > 0) else 0
+                    future_to_stock_diff = (future_ask - stock_bid) if (stock_bid > 0 and future_ask > 0) else 0
+                    stock_to_future_diff = (stock_ask - future_bid) if (future_bid > 0 and stock_ask > 0) else 0
 
                     future_name = future_codes_to_name.get(spread_info.future.future_no, "")
                     stock_name = stock_codes_to_name.get(spread_info.stock.stock_no, "")
@@ -2706,13 +2708,13 @@ class FrameOutput(Frame):
         table_frame.pack(fill="both", expand=True, padx=10, pady=5)
     
         # 建立Treeview表格 - 類似圖片中的格式
-        columns = ("股票名稱","股票代碼", "期貨名稱", "期貨代碼", "機會評級", "套利方向", "淨利潤", "股票買價", "期貨賣價", "股票賣價", "期貨買價" )
+        columns = ("股票名稱","股票代碼", "期貨名稱", "期貨代碼", "正價差" , "逆價差" ,"套利方向", "淨利潤", "總交易成本"  )
         
         self.output_tree = ttk.Treeview(table_frame, columns=columns, show="headings", height=25)
         
         # 設定欄位標題和寬度
         column_widths = {
-            "股票名稱": 100, "股票代碼": 100, "期貨名稱": 100, "期貨代碼": 100, "機會評級": 100, "套利方向": 100, "淨利潤": 100, "股票買價": 100, "期貨賣價": 100, "股票賣價": 100, "期貨買價": 100
+            "股票名稱": 100, "股票代碼": 100, "期貨名稱": 100, "期貨代碼": 100, "正價差": 100 , "逆價差": 100, "套利方向": 100, "淨利潤": 100, "總交易成本": 100
         }
         for col in columns:
             self.output_tree.heading(col, text=col)
@@ -2766,25 +2768,27 @@ class FrameOutput(Frame):
                 self.output_tree.delete(item)
             all_items = []
             for index, spread_info in spread_map.items():
-                if spread_info.ArbitrageDirection != None and spread_info.OpportunityScore != 1:
+                # if spread_info.ArbitrageDirection != None and spread_info.OpportunityScore != 1:
+                if spread_info.ArbitrageDirection != None:
                     values = (
                         stock_codes_to_name[spread_info.stock.stock_no] or "",
                         spread_info.stock.stock_no or "",
                         future_codes_to_name[spread_info.future.future_no] or "",
                         spread_info.future.future_no or "",
-                        str(spread_info.OpportunityScore) or "",
+                        f"{spread_info.Spread_FutureAsk_StockBid:.2f}",
+                        f"{spread_info.Spread_StockAsk_FutureBid:.2f}",
+                        # str(spread_info.OpportunityScore) or "",
                         spread_info.ArbitrageDirection or "",
-                        f"{spread_info.NetProfit:.2f}" if spread_info.NetProfit != 0 else "0.00",
-                        f"{spread_info.stock.bid_price:.2f}" if spread_info.stock.bid_price > 0 else "0.00",
-                        f"{spread_info.future.ask_price:.2f}" if spread_info.future.ask_price > 0 else "0.00",
-                        f"{spread_info.stock.ask_price:.2f}" if spread_info.stock.ask_price > 0 else "0.00",
-                        f"{spread_info.future.bid_price:.2f}" if spread_info.future.bid_price > 0 else "0.00",
+                        f"{max(spread_info.PosNetProfit,spread_info.NegNetProfit):.2f}",
+                        f"{spread_info.TotalCost:.2f}",
                     )
-                    all_items.append((str(spread_info.OpportunityScore), values))
+                    # all_items.append((str(spread_info.OpportunityScore),values))
+                    all_items.append(values)
                 # 先照機會評級排，再用淨利潤排序
-                all_items.sort(key=lambda t: (int(t[0]), float(t[1][6])), reverse=True)  # 按機會評級和淨利潤排序
+                # all_items.sort(key=lambda t: (int(t[0]),float(t[1][6])), reverse=True)  # 按機會評級和淨利潤排序
+                all_items.sort(key=lambda t: (float(t[7])), reverse=True)  # 按淨利潤排序
 
-            for score, values in all_items:
+            for values in all_items:
                 self.output_tree.insert("", "end", values=values)
         except Exception as e:
             WriteMessage(f"更新輸出表格時發生錯誤: {str(e)}", GlobalListInformation)
