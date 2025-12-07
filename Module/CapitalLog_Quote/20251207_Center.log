@@ -1,0 +1,9 @@
+-----------------------------------------------------------------
+[25000] 2025/12/07 21:29:45.927 A131221647_SKCenterLib_Login By CenterCert.
+[25000] 2025/12/07 21:29:45.987 SKCenterLib_LoginGW A131221647
+[25000] 2025/12/07 21:29:46.580 /Login/Password Query result is 000,1980;您的【網路密碼】已逾3個月未變更，為確保交易安全，建議您變更網路密碼。
+[25000] 2025/12/07 21:29:46.580 Start update timer automatically.  Result of Timer 24082
+[25000] 2025/12/07 21:29:46.710 /Common/Personal/GetOrder2LoginData Query result is 000,成功
+[25000] 2025/12/07 21:29:46.794 /Common/Personal/GetAccountsByIDNO Query result is 000,查詢成功
+[25000] 2025/12/07 21:29:46.922 Precheck/DistributedServer Query result is 000,分配成功
+[25000] 2025/12/07 21:29:46.923 Login all status is 0
