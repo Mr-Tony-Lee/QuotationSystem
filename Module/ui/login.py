@@ -105,6 +105,12 @@ class FrameLogin(Frame):
                     self.btn_connection.config(state="normal")
                     self.labelID["text"] = user_id
                     logger.write_message("登入成功!")
+                    
+                    # Auto-fetch account info
+                    logger.write_message("正在自動取得帳號資訊...")
+                    # Ensure Order API is initialized
+                    self.sk_client.initialize_order_api()
+                    self.sk_client.get_user_account()
                 else:
                     self.label_login_status.config(text="登入失敗", foreground="red")
                     error_msg = self.sk_client.get_return_code_message(m_nCode)

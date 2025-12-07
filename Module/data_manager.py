@@ -22,6 +22,10 @@ class DataManager:
         self._load_data()
         self._initialize_spread_info()
         self._initialize_all_stocks()
+        
+        self.accounts = [] # list of dict: {login_id, market, branch_code, branch_name, account_no, id_number, name}
+        
+        self.position_callbacks = [] # list of callable
 
     def set_sk_client(self, client):
         self.sk_client = client
@@ -109,6 +113,38 @@ class DataManager:
         # Update All Stocks
         if stock_no in self.all_stocks:
             self.all_stocks[stock_no].update(stock_data)
+
+    def add_account(self, login_id, account_data):
+        """
+        Store account info.
+        data format: {market, branch_code, branch_name, account_no, id_number, name}
+        """
+        # Check for duplicates
+        for acc in self.accounts:
+            if acc['login_id'] == login_id and acc['account_no'] == account_data['account_no']:
+                return
+
+        account_info = {
+            'login_id': login_id,
+            **account_data
+        }
+        self.accounts.append(account_info)
+        logger.write_message(f"Account added: {account_info['account_no']} ({account_info['name']})")
+        
+        # Notify position page if needed (or just let it query)
+        # We could add an OnAccount callback list too if strictly needed.
+
+
+    def add_position_callback(self, callback):
+        self.position_callbacks.append(callback)
+        
+    def update_position(self, data_str, source='TF'):
+        logger.write_message(f"DataManager received position data ({source}): {data_str}")
+        for callback in self.position_callbacks:
+            try:
+                callback(data_str, source)
+            except Exception as e:
+                logger.write_message(f"Position callback failed: {e}")
 
     def get_market_data_df(self, filter_options=None):
         """Prepare data for Quote UI"""

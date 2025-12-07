@@ -10,17 +10,20 @@ from Module.ui.login import FrameLogin
 from Module.ui.quote import Quote
 from Module.ui.information import FrameInformation
 from Module.ui.output import FrameOutput
+from Module.ui.position_page import PositionPage 
 from Module.ui.dialogs import AnnouncementDialog
-from Module.sk_api import SKClient, SKQuoteLibEvents, SKReplyLibEvent
+from Module.sk_api import SKClient, SKQuoteLibEvents, SKReplyLibEvent, SKOrderLibEvents
 from Module.data_manager import DataManager
 from Module.logger import logger
 
 # Global Event Handler references to prevent GC
+# Global Event Handler references to prevent GC
 sk_quote_event_handler = None
 sk_reply_event_handler = None
+sk_order_event_handler = None
 
 def main():
-    global sk_quote_event_handler, sk_reply_event_handler
+    global sk_quote_event_handler, sk_reply_event_handler, sk_order_event_handler
     
     root = Tk()
     root.title("交易系統 v2.0 - Refactored")
@@ -47,6 +50,10 @@ def main():
         sk_reply_event = SKReplyLibEvent()
         sk_reply_event_handler = comtypes.client.GetEvents(sk_client.skR, sk_reply_event)
         
+        # Order Events (for Position)
+        sk_order_event = SKOrderLibEvents(data_manager)
+        sk_order_event_handler = comtypes.client.GetEvents(sk_client.skO, sk_order_event)
+
     except Exception as e:
         logger.write_message(f"Event Handler Initialization Failed: {e}")
 
@@ -55,6 +62,7 @@ def main():
     notebook.pack(fill='both', expand=True, padx=10, pady=10)
     
     login_frame = FrameLogin(sk_client=sk_client)
+    root.login_frame = login_frame
     notebook.add(login_frame, text="登入")
     
     quote_page = Quote(root=root, sk_client=sk_client, data_manager=data_manager)
@@ -65,6 +73,9 @@ def main():
 
     output_frame = FrameOutput(root=root, data_manager=data_manager)
     notebook.add(output_frame, text="輸出")
+
+    position_page = PositionPage(root=root, sk_client=sk_client, data_manager=data_manager)
+    notebook.add(position_page, text="持倉")
 
     # Start Logger Processing
     # Using root.after in a loop, similar to original process_com_events but cleaner
