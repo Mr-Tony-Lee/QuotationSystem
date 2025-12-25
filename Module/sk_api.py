@@ -202,11 +202,17 @@ class SKReplyLibEvent:
 class SKOrderLibEvents:
     def __init__(self, data_manager):
         self.data_manager = data_manager
+        
+    def _redact_string(self, text, start=2, end=2):
+        """簡單隱藏中間內容, 保留前後 n 個字元"""
+        if not text or len(text) <= (start + end):
+            return "***"
+        return f"{text[:start]}***{text[-end:]}"
 
     def OnOpenInterest(self, strData):
         try:
             # strData format is usually comma separated
-            logger.write_message(f"OnOpenInterest: {strData}")
+            logger.write_message(f"OnOpenInterest: [Hidden Data]")
             # We can parse this and update a model or trigger a UI update via data_manager
             # For now, just log it. 
             # Ideally data_manager should have a method to handle position data.
@@ -217,11 +223,18 @@ class SKOrderLibEvents:
     def OnAccount(self, bstrLogInID, bstrAccountData):
         try:
             # Format: Market,BranchCode,BranchName,Account,IDNumber,Name
-            logger.write_message(f"OnAccount: {bstrAccountData}")
             
             # 『市場,分公司代碼,分公司,帳號,身份證字號,姓名』
             parts = bstrAccountData.split(',')
             if len(parts) >= 6:
+                # 建立遮罩後的 Log 訊息
+                masked_id = self._redact_string(parts[4])
+                masked_name = self._redact_string(parts[5], 1, 1)
+                masked_account = self._redact_string(parts[3])
+                
+                log_msg = f"OnAccount: {parts[0]},{parts[1]},{parts[2]},{masked_account},{masked_id},{masked_name}"
+                logger.write_message(log_msg)
+
                 account_data = {
                     'market': parts[0],
                     'branch_code': parts[1],
@@ -240,7 +253,8 @@ class SKOrderLibEvents:
 
     def OnRealBalanceReport(self, bstrData):
         try:
-            logger.write_message(f"OnRealBalanceReport: {bstrData}")
+            # 權益數資料也包含帳號與金額，建議隱藏詳細數值
+            logger.write_message(f"OnRealBalanceReport: [Hidden Data]")
             if self.data_manager:
                 self.data_manager.update_position(bstrData, source='TS')
         except Exception as e:

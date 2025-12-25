@@ -1,11 +1,16 @@
 import queue
 import datetime
 
+import os
+
 class Logger:
     def __init__(self):
         self.com_event_queue = queue.Queue()
         self.gui_listbox = None
         self.log_callback = None
+        self.log_dir = "Logs"
+        if not os.path.exists(self.log_dir):
+            os.makedirs(self.log_dir)
 
     def set_gui_listbox(self, listbox):
         self.gui_listbox = listbox
@@ -14,11 +19,21 @@ class Logger:
         self.log_callback = callback
 
     def write_message(self, message, list_info=None):
-        """安全的訊息寫入函數 - 使用隊列機制避免 COM 事件衝突"""
-        timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+        """安全的訊息寫入函數 - 使用隊列機制避免 COM 事件衝突，並寫入檔案"""
+        now = datetime.datetime.now()
+        timestamp = now.strftime("%H:%M:%S")
         formatted_message = f"[{timestamp}] {message}"
         
-        # 將消息放入隊列
+        # 1. 寫入檔案 (Immediate File Logging)
+        try:
+            date_str = now.strftime("%Y%m%d")
+            filename = os.path.join(self.log_dir, f"System_{date_str}.log")
+            with open(filename, "a", encoding="utf-8") as f:
+                f.write(formatted_message + "\n")
+        except Exception as e:
+            print(f"Failed to write to log file: {e}")
+
+        # 2. 將消息放入 GUI 隊列
         # param: (event_type, message, listbox_reference)
         # list_info argument is kept for compatibility but we prefer using registered listbox
         target_listbox = list_info if list_info else self.gui_listbox

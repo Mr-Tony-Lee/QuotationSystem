@@ -39,36 +39,36 @@ class Quote(Frame):
 
     def createWidgets(self):
         # 控制區域
-        control_frame = ttk.LabelFrame(self.Quote, text="報價控制")
-        control_frame.pack(fill="x", padx=10, pady=5)
+        control_frame = ttk.LabelFrame(self.Quote, text="報價控制", style="TLabelframe")
+        control_frame.pack(fill="x", padx=15, pady=10)
         
         # 開始訂閱按鈕
-        self.btn_start_quote = ttk.Button(control_frame, text="開始訂閱報價", command=self.start_quote_subscription)
-        self.btn_start_quote.pack(side="left", padx=5, pady=5)
+        self.btn_start_quote = ttk.Button(control_frame, text="開始訂閱報價", command=self.start_quote_subscription, width=15)
+        self.btn_start_quote.pack(side="left", padx=10, pady=10)
         
         # 停止訂閱按鈕
-        self.btn_stop_quote = ttk.Button(control_frame, text="停止訂閱", command=self.stop_quote_subscription)
-        self.btn_stop_quote.pack(side="left", padx=5, pady=5)
+        self.btn_stop_quote = ttk.Button(control_frame, text="停止訂閱", command=self.stop_quote_subscription, width=15)
+        self.btn_stop_quote.pack(side="left", padx=10, pady=10)
         self.btn_stop_quote.config(state="disabled")
         
         # 啟用/停用篩選按鈕
-        self.btn_enable_filter = ttk.Button(control_frame, text="啟用篩選", command=self.toggle_filter)
-        self.btn_enable_filter.pack(side="left", padx=10, pady=5)
+        self.btn_enable_filter = ttk.Button(control_frame, text="啟用篩選", command=self.toggle_filter, width=15)
+        self.btn_enable_filter.pack(side="left", padx=10, pady=10)
         
         # 篩選狀態顯示
-        self.label_filter_status = ttk.Label(control_frame, text="篩選: 停用", foreground="red")
-        self.label_filter_status.pack(side="left", padx=5, pady=5)
+        self.label_filter_status = ttk.Label(control_frame, text="篩選: 停用", foreground="red", font=("Microsoft JhengHei UI", 10, "bold"))
+        self.label_filter_status.pack(side="left", padx=10, pady=10)
         
         # 報價狀態標籤
-        self.label_quote_count = ttk.Label(control_frame, text="配對組數: 0")
-        self.label_quote_count.pack(side="right", padx=5, pady=5)
+        self.label_quote_count = ttk.Label(control_frame, text="配對組數: 0", font=("Microsoft JhengHei UI", 10, "bold"))
+        self.label_quote_count.pack(side="right", padx=10, pady=10)
         
         # 🔍 篩選區域
         self.create_filter_panel()
         
         # 報價表格區域
-        table_frame = ttk.LabelFrame(self.Quote, text="期貨股票價差監控")
-        table_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        table_frame = ttk.LabelFrame(self.Quote, text="期貨股票價差監控", style="TLabelframe")
+        table_frame.pack(fill="both", expand=True, padx=15, pady=5)
         
         # 建立Treeview表格
         columns = ("類型", "代碼", "商品名稱", "買進價格", "賣出價格", "成交價格", "買量", "賣量", "總量")
@@ -89,7 +89,7 @@ class Quote(Frame):
         h_scroll = ttk.Scrollbar(table_frame, orient="horizontal", command=self.quote_tree.xview)
         self.quote_tree.configure(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
         
-        self.quote_tree.grid(row=0, column=0, sticky="nsew")
+        self.quote_tree.grid(row=0, column=0, sticky="nsew", padx=1, pady=1)
         v_scroll.grid(row=0, column=1, sticky="ns")
         h_scroll.grid(row=1, column=0, sticky="ew")
         
@@ -98,11 +98,11 @@ class Quote(Frame):
     
     def create_filter_panel(self):
         """創建篩選面板"""
-        self.filter_frame = ttk.LabelFrame(self.Quote, text="🔍 篩選條件")
+        self.filter_frame = ttk.LabelFrame(self.Quote, text="🔍 篩選條件", style="TLabelframe")
         
         # 第一行：類型篩選
         row1 = ttk.Frame(self.filter_frame)
-        row1.pack(fill="x", padx=5, pady=3)
+        row1.pack(fill="x", padx=10, pady=5)
         
         ttk.Label(row1, text="類型:").pack(side="left", padx=5)
         type_combo = ttk.Combobox(row1, textvariable=self.filter_type, width=10, state="readonly")
@@ -113,7 +113,7 @@ class Quote(Frame):
         
         # 第二行：名稱篩選
         row2 = ttk.Frame(self.filter_frame)
-        row2.pack(fill="x", padx=5, pady=3)
+        row2.pack(fill="x", padx=10, pady=5)
         
         ttk.Label(row2, text="名稱:").pack(side="left", padx=5)
         self.entry_filter_name = ttk.Entry(row2, width=30)
@@ -135,7 +135,7 @@ class Quote(Frame):
 
         # 第三行：價格篩選
         row3 = ttk.Frame(self.filter_frame)
-        row3.pack(fill="x", padx=5, pady=3)
+        row3.pack(fill="x", padx=10, pady=5)
         
         filters = [
             ("買進價:", self.filter_bid_op, self.filter_bid_value),
@@ -158,7 +158,7 @@ class Quote(Frame):
         if self.filter_enabled:
             self.btn_enable_filter.config(text="停用篩選")
             self.label_filter_status.config(text="篩選: 啟用", foreground="green")
-            self.filter_frame.pack(fill="x", padx=10, pady=5, before=self.Quote.winfo_children()[2])
+            self.filter_frame.pack(fill="x", padx=15, pady=5, before=self.Quote.winfo_children()[2])
             logger.write_message("已啟用報價篩選")
         else:
             self.btn_enable_filter.config(text="啟用篩選")

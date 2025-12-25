@@ -41,31 +41,31 @@ class PositionPage(Frame):
         
     def createWidgets(self):
         # 標題與控制區
-        control_frame = ttk.LabelFrame(self, text="持倉查詢")
-        control_frame.pack(fill="x", padx=10, pady=5)
+        control_frame = ttk.LabelFrame(self, text="持倉查詢", style="TLabelframe")
+        control_frame.pack(fill="x", padx=15, pady=10)
         
         # 查詢按鈕
-        self.btn_query_position = ttk.Button(control_frame, text="查詢持倉 (GetOpenInterest)", command=self.query_position)
-        self.btn_query_position.pack(side="left", padx=5, pady=5)
+        self.btn_query_position = ttk.Button(control_frame, text="查詢持倉 (GetOpenInterest)", command=self.query_position, width=25)
+        self.btn_query_position.pack(side="left", padx=10, pady=10)
         
         # 顯示提示
-        ttk.Label(control_frame, text="自動查詢所有帳戶 (TF/TS)").pack(side="left", padx=5, pady=5)
+        ttk.Label(control_frame, text="自動查詢所有帳戶 (TF/TS)", font=("Microsoft JhengHei UI", 10)).pack(side="left", padx=5, pady=10)
 
         # 狀態標籤
-        self.label_status = ttk.Label(control_frame, text="狀態: 就緒")
-        self.label_status.pack(side="left", padx=10, pady=5)
+        self.label_status = ttk.Label(control_frame, text="狀態: 就緒", font=("Microsoft JhengHei UI", 10, "bold"), foreground="blue")
+        self.label_status.pack(side="left", padx=15, pady=10)
         
         # === 期貨部位 ===
-        frame_futures = ttk.LabelFrame(self, text="期貨倉位")
-        frame_futures.pack(fill="both", expand=True, padx=10, pady=5)
+        frame_futures = ttk.LabelFrame(self, text="期貨倉位", style="TLabelframe")
+        frame_futures.pack(fill="both", expand=True, padx=15, pady=5)
         
         # 欄位: 市場別, 帳號, 商品, 買賣別, 未平倉部位, 當沖未平倉部位, 平均成本, 單口手續費, 交易稅, LOGIN_ID
         cols_futures = ("市場別", "帳號", "商品", "買賣別", "未平倉部位", "當沖未平倉部位", "平均成本", "單口手續費", "交易稅", "LOGIN_ID")
         self.tree_futures = self._create_treeview(frame_futures, cols_futures)
         
         # === 證券部位 ===
-        frame_securities = ttk.LabelFrame(self, text="證券倉位")
-        frame_securities.pack(fill="both", expand=True, padx=10, pady=5)
+        frame_securities = ttk.LabelFrame(self, text="證券倉位", style="TLabelframe")
+        frame_securities.pack(fill="both", expand=True, padx=15, pady=5)
         
         # 欄位: 股票代號, 今日委買, 今日委賣, 今日買進成交, 今日賣出成交, 即時庫存, LOGIN_ID, ACCOUNT_NO
         cols_securities = ("股票代號", "今日委買", "今日委賣", "今日買進成交", "今日賣出成交", "即時庫存", "LOGIN_ID", "ACCOUNT_NO")

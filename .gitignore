@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables and configurations
+.env
+.venv
+env/
+venv/
+ENV/
+login_config.json
+
+# IDE settings
+.vscode/
+.idea/
+
+# Logs and Debugging
+*.log
+/Logs/
+/Module/CapitalLog_Quote/
+
+# OS generated files
+.DS_Store
+Thumbs.db

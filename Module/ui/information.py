@@ -25,26 +25,26 @@ class FrameInformation(Frame):
         self.createWidgets()
 
     def createWidgets(self):
-        control_frame = ttk.LabelFrame(self.Information, text="整理控制")
-        control_frame.pack(fill="x", padx=10, pady=5)
+        control_frame = ttk.LabelFrame(self.Information, text="整理控制", style="TLabelframe")
+        control_frame.pack(fill="x", padx=15, pady=10)
         
-        self.btn_start_info = ttk.Button(control_frame, text="開始整理", command=self.start_info)
-        self.btn_start_info.pack(side="left", padx=5, pady=5)
+        self.btn_start_info = ttk.Button(control_frame, text="開始整理", command=self.start_info, width=15)
+        self.btn_start_info.pack(side="left", padx=10, pady=10)
 
-        self.btn_stop_info = ttk.Button(control_frame, text="停止整理", command=self.stop_info)
-        self.btn_stop_info.pack(side="left", padx=5, pady=5)
+        self.btn_stop_info = ttk.Button(control_frame, text="停止整理", command=self.stop_info, width=15)
+        self.btn_stop_info.pack(side="left", padx=10, pady=10)
         self.btn_stop_info.config(state="disabled")
         
-        self.btn_enable_filter = ttk.Button(control_frame, text="啟用篩選", command=self.toggle_filter)
-        self.btn_enable_filter.pack(side="left", padx=10, pady=5)
+        self.btn_enable_filter = ttk.Button(control_frame, text="啟用篩選", command=self.toggle_filter, width=15)
+        self.btn_enable_filter.pack(side="left", padx=10, pady=10)
         
-        self.label_filter_status = ttk.Label(control_frame, text="篩選: 停用", foreground="red")
-        self.label_filter_status.pack(side="left", padx=5, pady=5)
+        self.label_filter_status = ttk.Label(control_frame, text="篩選: 停用", foreground="red", font=("Microsoft JhengHei UI", 10, "bold"))
+        self.label_filter_status.pack(side="left", padx=10, pady=10)
         
         self.create_filter_panel()
 
-        table_frame = ttk.LabelFrame(self.Information, text="期貨股票價差監控")
-        table_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        table_frame = ttk.LabelFrame(self.Information, text="期貨股票價差監控", style="TLabelframe")
+        table_frame.pack(fill="both", expand=True, padx=15, pady=5)
     
         columns = ("期貨名稱", "對照股票", "期貨買價", "期貨委買", "期貨賣價", "期貨委賣", "期貨成交", 
                    "股票買價", "股票委買", "股票賣價", "股票委賣", "股票成交", "期-股差額", "股-期差額")
@@ -63,7 +63,7 @@ class FrameInformation(Frame):
         h_scroll = ttk.Scrollbar(table_frame, orient="horizontal", command=self.info_tree.xview)
         self.info_tree.configure(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
 
-        self.info_tree.grid(row=0, column=0, sticky="nsew")
+        self.info_tree.grid(row=0, column=0, sticky="nsew", padx=1, pady=1)
         v_scroll.grid(row=0, column=1, sticky="ns")
         h_scroll.grid(row=1, column=0, sticky="ew")
         
@@ -71,7 +71,7 @@ class FrameInformation(Frame):
         table_frame.grid_columnconfigure(0, weight=1)
     
     def create_filter_panel(self):
-        self.filter_frame = ttk.LabelFrame(self.Information, text="🔍 篩選條件")
+        self.filter_frame = ttk.LabelFrame(self.Information, text="🔍 篩選條件", style="TLabelframe")
         
         row1 = ttk.Frame(self.filter_frame)
         row1.pack(fill="x", padx=5, pady=3)
