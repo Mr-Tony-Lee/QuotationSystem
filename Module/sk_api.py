@@ -1,6 +1,22 @@
 import comtypes.client
-import comtypes.gen.SKCOMLib as sk
 import os
+
+# Auto-generate COM wrapper if missing (Fix for ModuleNotFoundError)
+try:
+    import comtypes.gen.SKCOMLib as sk
+except ImportError:
+    dll_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'SKCOM.dll')
+    if os.path.exists(dll_path):
+        print(f"First run detected. Generating COM wrapper for {dll_path}...")
+        try:
+            comtypes.client.GetModule(dll_path)
+            import comtypes.gen.SKCOMLib as sk
+        except Exception as e:
+            print(f"Failed to generate COM wrapper: {e}")
+            raise
+    else:
+        raise ImportError(f"SKCOM.dll not found at {dll_path}. Cannot generate COM wrapper.")
+
 from .logger import logger
 from .models import StockInfo, FutureInfo
 
