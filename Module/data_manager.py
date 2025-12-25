@@ -1,13 +1,15 @@
 import pandas as pd
+import os
 from io import StringIO
 from typing import Union
-from .constants import StockList, FutureList, Compare_Map
+# from .constants import StockList, FutureList, Compare_Map # Removed
 from .models import StockInfo, FutureInfo, PriceSpreadInfo
 from .logger import logger
 
 class DataManager:
     def __init__(self):
         self.sk_client = None  # Reference to SKClient
+        self.data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
         
         self.stock_codes_to_name = {}
         self.stock_name_to_codes = {}
@@ -26,32 +28,49 @@ class DataManager:
         self.accounts = [] # list of dict: {login_id, market, branch_code, branch_name, account_no, id_number, name}
         
         self.position_callbacks = [] # list of callable
+        self.kline_callbacks = {} # dict[stock_no, callable]
+        self.kline_data = {} # dict[stock_no, list]
 
     def set_sk_client(self, client):
         self.sk_client = client
 
+    def _read_file_content(self, filename):
+        try:
+            path = os.path.join(self.data_dir, filename)
+            with open(path, 'r', encoding='utf-8') as f:
+                return f.read()
+        except Exception as e:
+            logger.write_message(f"Failed to read {filename}: {e}")
+            return ""
+
     def _load_data(self):
         # Load StockList
         try:
-            df = pd.read_csv(StringIO(StockList), sep=' ', header=None, names=['name', 'code'], dtype=str, engine='python')
-            self.stock_codes_to_name = dict(zip(df['code'], df['name']))
-            self.stock_name_to_codes = dict(zip(df['name'], df['code']))
+            content = self._read_file_content('StockList.txt')
+            if content:
+                df = pd.read_csv(StringIO(content), sep=' ', header=None, names=['name', 'code'], dtype=str, engine='python')
+                self.stock_codes_to_name = dict(zip(df['code'], df['name']))
+                self.stock_name_to_codes = dict(zip(df['name'], df['code']))
         except Exception as e:
             logger.write_message(f"Load StockList Failed: {e}")
 
         # Load FutureList
         try:
-            df = pd.read_csv(StringIO(FutureList), sep=' ', header=None, names=['code', 'name'], dtype=str, engine='python')
-            self.future_codes_to_name = dict(zip(df['code'], df['name']))
-            self.future_name_to_codes = dict(zip(df['name'], df['code']))
+            content = self._read_file_content('FutureList.txt')
+            if content:
+                df = pd.read_csv(StringIO(content), sep=' ', header=None, names=['code', 'name'], dtype=str, engine='python')
+                self.future_codes_to_name = dict(zip(df['code'], df['name']))
+                self.future_name_to_codes = dict(zip(df['name'], df['code']))
         except Exception as e:
             logger.write_message(f"Load FutureList Failed: {e}")
 
     def _initialize_spread_info(self):
         try:
-            df = pd.read_csv(StringIO(Compare_Map), sep='\\s+', header=None, 
-                             names=['future_name', 'future_short', 'stock_name', 'stock_code'], 
-                             dtype=str, engine='python')
+            content = self._read_file_content('Compare_Map.txt')
+            if content:
+                df = pd.read_csv(StringIO(content), sep='\\s+', header=None, 
+                                 names=['future_name', 'future_short', 'stock_name', 'stock_code'], 
+                                 dtype=str, engine='python')
             compare_list = list(df.itertuples(index=False, name=None))
             
             count = 1
@@ -145,6 +164,55 @@ class DataManager:
                 callback(data_str, source)
             except Exception as e:
                 logger.write_message(f"Position callback failed: {e}")
+
+    def register_kline_callback(self, stock_no, callback):
+        """Register a callback for KLine updates for a specific stock"""
+        self.kline_callbacks[stock_no] = callback
+
+    def update_kline(self, stock_no, data_str):
+        """
+        Handle incoming KLine data. 
+        Format usually: Date,Open,High,Low,Close,Volume
+        It might be a full history dump or an update.
+        """
+        try:
+            # logger.write_message(f"DataManager update_kline: {stock_no} len={len(data_str)}")
+            
+            if stock_no not in self.kline_data:
+                self.kline_data[stock_no] = []
+            
+            new_records = []
+            lines = data_str.strip().split('\n')
+            
+            # Simple parsing (adjust based on actual API format)
+            # data_str might be "20230101,100,105,95,102,500"
+            for line in lines:
+                parts = line.split(',')
+                if len(parts) >= 6:
+                    record = {
+                        'date': parts[0],
+                        'open': float(parts[1]),
+                        'high': float(parts[2]),
+                        'low': float(parts[3]),
+                        'close': float(parts[4]),
+                        'volume': int(parts[5])
+                    }
+                    new_records.append(record)
+            
+            if new_records:
+                self.kline_data[stock_no].extend(new_records)
+                
+                # Setup DataFrame for plotting
+                # Note: We might want to optimize this to not create DF every time on high frequency
+                # But for KLine usually it's okay.
+                
+                # Notify callback
+                if stock_no in self.kline_callbacks:
+                    self.kline_callbacks[stock_no](stock_no, new_records)
+                    
+        except Exception as e:
+            logger.write_message(f"Update KLine failed: {e}")
+
 
     def get_market_data_df(self, filter_options=None):
         """Prepare data for Quote UI"""

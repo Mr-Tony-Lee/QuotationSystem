@@ -81,8 +81,6 @@ class SKClient:
             self.initialize_order_api()
             
             return m_nCode
-            
-            return m_nCode
         except Exception as e:
             logger.write_message(f"Connect failed: {e}")
             return -1
@@ -96,12 +94,21 @@ class SKClient:
             logger.write_message(f"RequestStocks failed: {e}")
             return -1
 
-            logger.write_message(f"RequestStocks failed: {e}")
+    def request_kline(self, stock_no, kline_type=0, out_type=0):
+        """
+        Request KLine data.
+        kline_type: 0=1min, 4=Day, etc. (Check API docs, usually 0=1m, 4=Daily)
+        out_type: 0=Oldest first, 1=Newest first
+        """
+        try:
+            # SKQuoteLib_RequestKLine(ByVal bstrStockNo As String, ByVal nKLineType As Short, ByVal nOutType As Short)
+            m_nCode = self.skQ.SKQuoteLib_RequestKLine(stock_no, kline_type, out_type)
+            self.log_return_code("RequestKLine", m_nCode, f"Requesting KLine for {stock_no}")
+            return m_nCode
+        except Exception as e:
+            logger.write_message(f"RequestKLine failed: {e}")
             return -1
 
-        except Exception as e:
-            logger.write_message(f"RequestStocks failed: {e}")
-            return -1
 
     def initialize_order_api(self):
         """Initializes the Order Library and reads certificate"""
@@ -121,11 +128,6 @@ class SKClient:
         try:
             m_nCode = self.skO.GetUserAccount()
             self.log_return_code("GetUserAccount", m_nCode, "Request User Account")
-            return m_nCode
-        except Exception as e:
-            logger.write_message(f"GetUserAccount failed: {e}")
-            return -1
-            
             return m_nCode
         except Exception as e:
             logger.write_message(f"GetUserAccount failed: {e}")
@@ -205,6 +207,15 @@ class SKQuoteLibEvents:
         except Exception as e:
             logger.write_message(f"OnNotifyQuoteLONG Exception: {e}")
 
+    def OnNotifyKLineData(self, bstrStockNo, bstrData):
+        try:
+            # logger.write_message(f"KLine Data [{bstrStockNo}]: {bstrData[:50]}...")
+            if self.data_manager:
+                self.data_manager.update_kline(bstrStockNo, bstrData)
+        except Exception as e:
+            logger.write_message(f"OnNotifyKLineData Exception: {e}")
+
+
 class SKReplyLibEvent:
     def OnReplyMessage(self, bstrUserID, bstrMessages):
         try:
@@ -212,7 +223,6 @@ class SKReplyLibEvent:
             return -1
         except Exception as e:
             logger.write_message(f"OnReplyMessage Exception: {e}")
-            return -1
             return -1
 
 class SKOrderLibEvents:

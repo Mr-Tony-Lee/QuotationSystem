@@ -1,3 +1,5 @@
 comtypes
 pandas
 pyinstaller
+matplotlib
+mplfinance

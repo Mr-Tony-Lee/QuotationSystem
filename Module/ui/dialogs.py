@@ -35,7 +35,7 @@ class AnnouncementDialog:
         
         title_label = ttk.Label(
             title_frame, 
-            text="🚀 歡迎使用報價系統 v2.0 (Refactored)",
+            text="🚀 歡迎使用報價系統 v2.1",
             font=('Arial', 16, 'bold')
         )
         title_label.pack()
@@ -73,7 +73,11 @@ class AnnouncementDialog:
 4. 報價結束後，可以去整理跟輸出
 
 🎉 更新內容
-• v2.0 - 重構版本
+• v2.1 - 技術線圖更新
+    - 新增專業 K 線技術線圖 (Dark Theme)
+    - 雙擊報價即可開啟
+
+• v2.0 - Refactored
     - 新增交易成本
     - 重新撰寫公式
 

@@ -1,3 +1,6 @@
+from .constants import FUTURE_FEE, STOCK_FEE_RATE, STOCK_TAX_RATE, STOCK_DISCOUNT
+from .logger import logger
+
 class StockInfo:
     def __init__(self):
         self.index = 0
@@ -150,8 +153,8 @@ class PriceSpreadInfo:
 
     @property
     def CompleteData(self):
-        """檢查是否有完整的買賣價資料"""
-        return (self.future.bid_price > 0 and self.future.ask_price > 0 and self.stock.bid_price > 0 and self.stock.ask_price > 0)
+        """檢查是否有完整的買賣價資料 (Deprecated: Use complete_data instead)"""
+        return self.complete_data
     
     @property
     def Positive_Future(self):
@@ -165,13 +168,17 @@ class PriceSpreadInfo:
     
     @property
     def FutureFee(self):
-        """計算期貨交易手續費 (假設為0.00002)"""
-        return self.future.bid_price * 1000 * 0.00002 if self.future.bid_price > 0 else 0
+        """計算期貨交易手續費"""
+        return self.future.bid_price * self.future.multiplier * FUTURE_FEE if self.future.bid_price > 0 else 0
     
     @property
     def StockCost(self):
-        """計算股票交易成本 (假設為0.001425 + 0.003)"""
-        return self.stock.ask_price * 1000 * (0.001425 + 0.003) if self.stock.ask_price > 0 else 0
+        """計算股票交易成本 (手續費 + 交易稅)"""
+        if self.stock.ask_price <= 0:
+            return 0
+        fee = self.stock.ask_price * 1000 * STOCK_FEE_RATE * (1 - STOCK_DISCOUNT)
+        tax = self.stock.ask_price * 1000 * STOCK_TAX_RATE
+        return fee + tax
     
     @property
     def TotalCost(self):

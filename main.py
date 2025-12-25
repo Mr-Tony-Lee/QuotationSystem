@@ -26,7 +26,7 @@ def main():
     global sk_quote_event_handler, sk_reply_event_handler, sk_order_event_handler
     
     root = Tk()
-    root.title("交易系統 v2.0 - Refactored")
+    root.title("交易系統 v2.1 - Refactored (含技術線圖)")
     root.geometry("1400x900")
     
     # === UI Beautification: Setup Global Styles ===

@@ -1,6 +1,7 @@
 from tkinter import Frame, StringVar, Listbox, ttk, messagebox
 from ..logger import logger
 import pandas as pd
+from .chart_window import ChartWindow
 
 class Quote(Frame):
     def __init__(self, master=None, sk_client=None, data_manager=None, root=None):
@@ -74,6 +75,7 @@ class Quote(Frame):
         columns = ("類型", "代碼", "商品名稱", "買進價格", "賣出價格", "成交價格", "買量", "賣量", "總量")
         
         self.quote_tree = ttk.Treeview(table_frame, columns=columns, show="headings", height=25)
+        self.quote_tree.bind("<Double-1>", self.on_tree_double_click)
         
         column_widths = {
             "類型": 60, "代碼": 80, "商品名稱": 120, "買進價格": 80, "賣出價格": 80, 
@@ -446,3 +448,23 @@ class Quote(Frame):
             
         except Exception as e:
             logger.write_message(f"更新表格時發生錯誤: {str(e)}")
+
+    def on_tree_double_click(self, event):
+        item_id = self.quote_tree.identify_row(event.y)
+        if not item_id:
+            return
+            
+        values = self.quote_tree.item(item_id, 'values')
+        if values:
+            # columns: ("類型", "代碼", "商品名稱", ...)
+            # index: 0, 1, 2
+            stock_code = values[1]
+            stock_name = values[2]
+            
+            logger.write_message(f"開啟技術線圖: {stock_name} ({stock_code})")
+            
+            ChartWindow(self.main_window, 
+                        stock_code=stock_code, 
+                        stock_name=stock_name, 
+                        sk_client=self.sk_client, 
+                        data_manager=self.data_manager)

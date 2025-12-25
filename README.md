@@ -37,8 +37,11 @@ Module/
 ### 環境需求
 - Windows OS
 - Python 3.x
-- 必要套件: `pandas`, `comtypes`, `tkinter` (內建)
+- 必要套件: `pandas`, `comtypes`, `tkinter` (內建), `mplfinance`, `matplotlib`
 - 必須安裝群益 API 元件並註冊 DLL
+
+### 新增功能-v2.1
+- **技術線圖**: 雙擊報價表中的商品，即可開啟專業級 K 線圖 (Dark Theme)。
 
 ### 執行方式
 
